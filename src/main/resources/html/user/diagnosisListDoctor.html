@@ -1,0 +1,156 @@
+<!DOCTYPE html >
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>就医管理</title>
+<link type="text/css" rel="stylesheet" th:href="@{/css/page.css}"/>
+<script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}"></script>
+<!-- mmGrid -->
+<link rel="stylesheet" type="text/css" th:href="@{/plug/mmGrid/mmGrid.css}"/>
+<script type="text/javascript"  th:src="@{/plug/mmGrid/mmGrid.js}" ></script>
+<!-- mmGrid page -->
+<link rel="stylesheet" type="text/css" th:href="@{/plug/mmGrid/mmPaginator.css}"/>
+<script type="text/javascript" th:src="@{/plug/mmGrid/mmPaginator.js}" ></script>
+
+<!-- layer -->
+<link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}"  media="all"/>
+<script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+
+<link type="text/css" rel="stylesheet" th:href="@{/js/layer/skin/layer.css}"/>
+<script type="text/javascript" th:src="@{/js/layer/layer.js}" ></script>
+<style type="text/css">
+</style>
+
+</head>
+<body>
+<div  lay-allowclose="true" style="margin-left:15px; width: 98%">
+<div class="first_div" style="border:none;">
+	<table class="param_table" style="margin-left:10px;" >
+		<tr>
+			<td style="width:150px;">
+				<span>诊疗建议：</span>
+				<input type="text" id="info" name="info" class="input_0" />
+			</td>
+			<td style="">
+			<div class="layui-btn-group">
+			  <button class="layui-btn" onclick="search()">查询</button>
+			</div>
+			</td>
+		</tr>
+	</table>
+	
+	<div style="margin:3px 10px 10px 10px;"></div>
+	<div id="exampleTableUser" style="margin-top:5px;" ></div>
+	<div id="paginator11-1" align="right" style="margin-right:10px;" ></div>
+</div>
+</div>
+</body>
+</html>
+
+<script type="text/javascript">
+	var petId = [[${petId}]];
+$(function(){	
+	//表格
+	$('#exampleTableUser').mmGrid({
+    	root:'rows',// 和后台数据保存列一致,对应MMGridPageVoBean rows
+		url:"/user/diagnosis/getAllByLimitDoctor",
+    	width: 'auto',
+    	height: 'auto',
+    	//checkCol: true,
+    	fullWidthRows: true, //表格第一次加载数据时列伸展，自动充满表格
+    	showBackboard: false,
+        //multiSelect: true,
+        indexCol: true,  //索引列
+        params:function(){
+        	var param = new Object();
+        	param.info = $.trim($("#info").val());
+			if (petId!='petId'){
+				param.petId = petId;
+			}
+			return param;
+        },
+        cols: [{title: 'ID', name: 'id', width:60, hidden:true},
+			{title: '宠物名', name: 'name', width:40},
+			{title: '用户名', name: 'userName', width:40},
+			{title: '医生名', name: 'doctorName', width:40},
+			{title: '诊疗建议', name: 'info', width:40},
+			{title: '类型', name: 'type', width:30, renderer:function(val, item, rowIndex){
+					console.log(val);
+
+					//状态:1申请中,2申请通过,3不通过,4已完成
+					var t = "";
+					switch (val) {
+						case 1: t = "正常就医";break;
+						case 2: t = "注射疫苗";break;
+						case 3: t = "驱虫";break;
+					}
+					return t;
+				}},
+			{title: '状态', name: 'status', width:30, renderer:function(val, item, rowIndex){
+					console.log(val);
+
+					//状态:1申请中,2申请通过,3不通过,4已完成
+					var t = "";
+					switch (val) {
+						case 1: t = "正常";break;
+						case 2: t = "严重";break;
+						case 3: t = "较重";break;
+						case 4: t = "死亡";break;
+					}
+					return t;
+				}},
+			{title: '创建时间', name: 'createTime', width:30},
+			  {title: '操作', name: 'id', width:40, renderer:function(val, item, rowIndex){
+					var buttonStr = '<span class=" layui-btn layui-btn-danger layui-btn-sm" onclick="dontPass('+"\'"+item.id+"\'"+')" >删除</span>';
+					return "<div class='span_btus' >" + buttonStr + "</div>";
+				}}
+           ],
+        plugins : [
+        	$('#paginator11-1').mmPaginator({
+        		totalCountName: 'total',    //对应MMGridPageVoBean count
+        		page: 1,                    //初始页
+        		pageParamName: 'page',      //当前页数
+        		limitParamName: 'limit', //每页数量
+        		limitList: [10, 20, 30, 50]
+        	})
+        ]
+    });
+});
+
+//查询
+function search(){
+	$('#exampleTableUser').mmGrid().load({"page":1});
+}
+
+function dontPass(id) {
+	var param = new Object();
+	param.id = id;
+	layer.confirm('确认保存吗？', {icon: 3, title:'提示'}, function(index){
+		$.ajax({
+			type:"POST",
+			async:true,  //默认true,异步
+			data:param,
+			url:"/user/diagnosis/del",
+			success:function(data){
+				console.log(data);
+				if(data == "SUCCESS"){
+					layer.alert('操作成功！', {icon: 1}, function(indexOk){
+						search();
+						layer.closeAll();
+					});
+				}else if(data == "LGINOUT"){
+					//重新登录
+					window.location.href = "/logout";
+				}else{
+					layer.alert('操作失败！', {icon: 2}, function(indexNo){
+						layer.closeAll();
+					});
+				}
+			}
+		});
+	});
+}
+
+
+</script>

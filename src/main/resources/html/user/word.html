@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
+For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>CKEditor Sample</title>
+    <script src="/samples/ckeditor.js"></script>
+    <script src="/samples/samples/js/sample.js"></script>
+    <link rel="stylesheet" href="/samples/samples/css/samples.css">
+    <link rel="stylesheet" href="/samples/samples/toolbarconfigurator/lib/codemirror/neo.css">
+    <link type="text/css" rel="stylesheet" th:href="@{/css/page.css}"/>
+    <script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}"></script>
+    <!-- layer -->
+    <link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}"  media="all"/>
+    <script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+
+    <!-- validation -->
+    <script type="text/javascript" th:src="@{/js/jquery/jquery.validate.js}" ></script>
+
+    <link type="text/css" rel="stylesheet" th:href="@{/js/layer/skin/layer.css}"/>
+    <script type="text/javascript" th:src="@{/js/layer/layer.js}" ></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="Try the latest sample of CKEditor 4 and learn more about customizing your WYSIWYG editor with endless possibilities.">
+
+
+    <style type="text/css">
+
+        .need_span{
+            color: red;
+            display: none;
+        }
+        .need_0, .validation_span{
+            color: red;
+        }
+        .need_1{
+            color: #666666;
+        }
+        .input_0{
+            width: 400px;
+        }
+        .form_table td{
+            padding: 5px;
+        }
+        .text_ad_0{
+            font-weight: bold;
+            color: #444444;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body id="main">
+
+<form>
+    <table class="form_table" style="margin: auto;" width='60%'>
+        <tr>
+            <td align="right" >
+                <span class="need_0">*</span>
+                <span class="text_ad_0">标题：</span>
+            </td>
+            <td>
+                <input id="title" type="text" name="title" class="input_0"/>
+                <span class="validation_span"></span>
+            </td>
+        </tr>
+        <tr style="">
+            <main>
+                <div class="grid-container">
+                    <div class="grid-width-100" style="height: 40%">
+                        <textarea name="editor" id="editor"/></textarea>
+                    </div>
+                </div>
+            </main>
+        </tr>
+
+        <tr>
+            <td colspan="2" align="left" >
+                <div style="margin-top:10px;margin-bottom:20px;margin-left:120px;">
+                    <input type="submit" class="layui-btn" lay-submit="" lay-filter="add" id="saveBtu" name="saveBtu" value="发布" style="" />
+                </div>
+            </td>
+        </tr>
+    </table>
+</form>
+<script>
+    var editorElement;
+    $(function(){
+        CKEDITOR.replace('editor');
+        editorElement =  CKEDITOR.document.getById( 'editor' );
+        // 4、给CKEditor赋值
+        CKEDITOR.instances.editor.setData("请填写文字内容");
+    });
+
+    $('form').validate({
+        debug:true,
+        /**//* 设置验证规则 */
+        rules: {
+            title: {
+                required:true
+            }
+        },
+        /**//* 设置错误信息 */
+        messages: {
+            title: {
+                required:"标题不可为空"
+            }
+        },
+        /**//* 设置验证触发事件 */
+        onsubmit:true,
+        /**//* 设置错误信息提示DOM */
+        errorPlacement: function(error, element) {
+            $(element[0]).parent().find(".validation_span").text(error.html()).show();
+        },
+        success:function(error, element){
+            $(element[0]).parent().find(".validation_span").text("");
+        },
+        submitHandler: function (){
+            save();
+        }
+    });
+
+    //保存
+    function save(){
+        var param = new Object();
+        param.title = $.trim($("#title").val());
+        param.type = $.trim($("#type").val());
+
+        // 3、获取CKEditor带HTML标签的文本
+        var CHtml= CKEDITOR.instances.editor.getData();
+        param.content = $.trim(CHtml);
+        console.log(param);
+        var urlStr = "/user/notice/addWord";
+
+        layer.confirm('确认保存吗？', {icon: 3, title:'提示'}, function(index){
+            $.ajax({
+                type:"POST",
+                async:true,  //默认true,异步
+                data:param,
+                url:urlStr,
+                success:function(data){
+                    console.log(data);
+                    if(data == "SUCCESS"){
+                        layer.alert('发布成功！', {icon: 1}, function(indexOk){
+                            parent.$("#add_iframe iframe").attr("src", "");
+                            parent.$("div").first().show();
+                            parent.$("#add_iframe").hide();
+                            layer.close(indexOk);
+                            layer.closeAll();
+                            parent.layer.closeAll();
+                        });
+                    }else if(data == "LGINOUT"){
+                        //重新登录
+                        parent.window.location.href = "/logout";
+                    }else{
+                        layer.alert('发布失败！', {icon: 2}, function(indexNo){
+                            layer.closeAll();
+                            parent.layer.closeAll();
+                        });
+                    }
+                }
+            });
+        });
+    }
+</script>
+</body>
+</html>

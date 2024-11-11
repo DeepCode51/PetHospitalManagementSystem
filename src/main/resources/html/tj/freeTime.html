@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html style="height: 90%; width: 100%" xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <!-- layui -->
+    <link type="text/css" rel="stylesheet" th:href="@{/css/page.css}" />
+    <link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}"  media="all"/>
+    <script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+</head>
+<body style="height: 90%;width: 100%; margin: 0">
+<script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}"></script>
+<script type="text/javascript" th:src="@{/js/echarts/echarts.js}"></script>
+选择医生:
+<select id="petId" name="petId" class="input_0">
+</select>
+请选择日期
+<input id="ckTime" type="text" name="ckTime" class="input_0" value=""/>
+<span class="validation_span"></span>
+<input type="button" class="layui-btn" lay-filter="add" onclick="cx()" value="查询" style="" />
+<div id="container" style="height: 90%;width: 100%"></div>
+</body>
+</html>
+
+<script type="text/javascript" th:inline="javascript">
+
+    layui.use(['layer','laydate'], function(){
+        var laydate = layui.laydate;
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#ckTime' //指定元素
+            ,type: 'date'
+            ,trigger : 'click'
+        });
+    });
+    var doctors = [[${doctors}]];
+    var time = [[${time}]];
+    var value = [[${value}]];
+    var docName = [[${docName}]];
+
+    console.log(doctors);
+
+    var dom = document.getElementById("container");
+    var myChart = echarts.init(dom);
+    var app = {};
+    option = null;
+
+    function fulshEchart(n, v, t){
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: n+'医生的预约时间'
+            },
+            tooltip: {},
+            legend: {
+                data:['已被预约(次数)']
+            },
+            xAxis: {
+                data: t
+            },
+            yAxis: {},
+            series: [{
+                name: '已被预约',
+                type: 'bar',
+                data: v
+            }]
+        };
+
+
+
+        if (option && typeof option === "object") {
+            myChart.setOption(option, true);
+        }
+    }
+
+    $(function(){
+        // 渲染下拉框
+        for(var i=0; i<doctors.length; i++){
+            var d = doctors[i];
+            var newOption = document.createElement("option");
+            newOption.text=d.name;
+            newOption.value=d.id;
+            document.getElementById("petId").add(newOption);
+        }
+        fulshEchart(docName, value, time);
+    });
+
+    function cx(){
+        var id = $("#petId").val();
+        var ckTime = $("#ckTime").val();
+        if (!ckTime){
+            layer.alert('请选择日期！', {icon: 2}, function(indexNo){
+                layer.closeAll();
+                layer.close(indexNo);
+            });
+            return;
+        }
+        $.ajax({
+            type:"POST",
+            async:false,  //默认true,异步
+            data:{"id":id, "date":ckTime},
+            dataType:'json',
+            url:"/health/getFreeTime",
+            success:function(data){
+                fulshEchart(data.n, data.v, data.t);
+            },
+            error: function() {
+                layer.alert('系统错误！', {icon: 2});
+            }
+        });
+    }
+
+</script>

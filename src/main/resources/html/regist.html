@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <title>用户注册</title>
+  <script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}" src="js/jquery/jquery-3.3.1.js" ></script>
+<link th:href="@{/css/login.css}" href="css/login.css" rel="stylesheet" type="text/css" media="all"/>
+<link rel="stylesheet" th:href="@{/css/cloudstyle.css}" href="css/cloudstyle.css"/>
+<!-- layer -->
+<link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}" media="all"/>
+<script type="text/javascript" th:src="@{/plug/layui/layui.js}"  src="plug/layui/layui.js" ></script>
+<style type="text/css">
+input::-webkit-input-placeholder {
+	color:#fff;
+}
+.div-a{ position:fixed; left:20px; top:20px; background:#F00;padding: 10px;color: #FFF;z-index: 999}  
+.div-b{ position:fixed; right:20px; top:20px; background:#F00;padding: 10px;color: #FFF;z-index: 999} 
+</style>
+<script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
+
+</head>
+<body onkeydown="key_down(event.keyCode);">
+<div class="sky" style="position:absolute; width:100%; top:0px;height:100%;opacity:0.75;"></div>
+<div class="login-form" style="position:relative;">
+		<div class="login-top">
+		<form class="layui-form">
+			<div class="login-ic">
+				<i class="layui-icon layui-icon-username" style="font-size: 30px; color: #fff;"></i>
+				<input type="text"  placeholder="姓名（必填）" id="name" name="name" />
+				<div class="clear"> </div>
+			</div>
+			<div class="login-ic">
+				<i class="layui-icon layui-icon-password" style="font-size: 30px; color: #fff;"></i>
+				<input type="password"  placeholder="密码（必填）" id="password" name="password"  />
+				<div class="clear"> </div>
+			</div>
+			<div class="login-ic">
+				<i class="layui-icon layui-icon-cellphone" style="font-size: 30px; color: #fff;"></i>
+				<input type="text"  placeholder="手机号（必填）" id="phone" name="e"  lay-verify="phone"  />
+				<div class="clear"> </div>
+			</div>
+			<div class="login-ic">
+                <i class="layui-icon layui-icon-notice" style="font-size: 30px; color: #fff;"></i>
+                <input type="text"  placeholder="地址（必填）" id="address" name="e"  />
+                <div class="clear"> </div>
+            </div>
+			<div class="log-bwn">
+				<input type="button"  id="login1" value="提交注册信息" onclick="tijiao()">
+			</div>
+		</form>
+	</div>
+</div>
+</body>
+</html>
+
+
+<script>
+
+function key_down(num){
+	if(num == 13) {
+		tijiao();
+	}
+}
+
+layui.use(['form', 'layedit', 'laydate'], function(){
+  var laydate = layui.laydate;
+  var form = layui.form;
+  //自定义验证规则  
+  form.verify({  
+       phone: [/^1[3|4|5|7|8]\d{9}$/, '手机必须11位，只能是数字！']  
+        ,email: [/^[a-z0-9._%-]+@([a-z0-9-]+\.)+[a-z]{2,4}$|^1[3|4|5|7|8]\d{9}$/, '邮箱格式不对']  
+  });  
+});
+
+
+function tijiao(){
+
+	var name = $("#name").val();
+	var password = $("#password").val();
+	var phone = $("#phone").val();
+	var address = $("#address").val();
+	console.log(name+password+phone+address);
+	if(name&&password&&phone&&address){
+		console.log("========");
+		$.ajax({
+			type:"POST",
+			async:true,  //默认true,异步
+			data:{"name":name,"password":password,"phone":phone,"address":address},
+			dataType:'json',
+			timeout:20000,
+			url:"/doRegist",
+			beforeSend: function () {
+				layer.msg('拼命注册中...', {icon: 16,shade: [0.5, '#f5f5f5'],scrollbar: false,offset: 'auto', time:600000});
+            },
+			success:function(data){
+				layer.alert(data.message, {icon: data.result=="success"?1:2},function() {
+				    window.location.href = "/main";
+				});
+
+		    },
+		    error:function() {
+		    	layer.alert('服务器错误,请联系开发人员！', {icon: 2});
+		    }
+		});
+	}else{
+		if(!name){
+			layer.open({
+				  title: '错误提示'
+				  ,content: '姓名为必选项！'
+			}); 
+		}else if(!password){
+			layer.open({
+				  title: '错误提示'
+				  ,content: '密码为必选项!'
+			}); 
+		}else if(!phone){
+			layer.open({
+				  title: '错误提示'
+				  ,content: '请输入手机号'
+			}); 
+		}else if(!address){
+			layer.open({
+				  title: '错误提示'
+				  ,content: '请输入地址'
+			}); 
+		}
+	}
+	$("#login1").attr("disabled","disabled"); 
+	$("#login1").css({'background-color':'#708090'});
+}
+
+$(function(){
+	$('body').on('input propertychange', '.login-ic', function(event) {
+        $("#login1").removeAttr("disabled");
+    	$("#login1").css({'background-color':'red'});
+    });
+});
+</script>

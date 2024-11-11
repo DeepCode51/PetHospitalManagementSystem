@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.phms.mapper.PageMapper" >
+    <resultMap id="BaseResultMap" type="com.phms.pojo.Page" >
+        <id column="page_id" property="pageId" jdbcType="INTEGER" />
+        <result column="parent_id" property="parentId" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="url" property="url" jdbcType="VARCHAR" />
+        <result column="level_type" property="levelType" jdbcType="INTEGER" />
+        <result column="level_index" property="levelIndex" jdbcType="INTEGER" />
+        <result column="delete_flag" property="deleteFlag" jdbcType="INTEGER" />
+        <result column="desc" property="desc" jdbcType="VARCHAR" />
+    </resultMap>
+    <sql id="Example_Where_Clause" >
+        <where >
+            <foreach collection="oredCriteria" item="criteria" separator="or" >
+                <if test="criteria.valid" >
+                    <trim prefix="(" suffix=")" prefixOverrides="and" >
+                        <foreach collection="criteria.criteria" item="criterion" >
+                            <choose >
+                                <when test="criterion.noValue" >
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue" >
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue" >
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue" >
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause" >
+        <where >
+            <foreach collection="example.oredCriteria" item="criteria" separator="or" >
+                <if test="criteria.valid" >
+                    <trim prefix="(" suffix=")" prefixOverrides="and" >
+                        <foreach collection="criteria.criteria" item="criterion" >
+                            <choose >
+                                <when test="criterion.noValue" >
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue" >
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue" >
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue" >
+                                    and ${criterion.condition}
+                                    <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Base_Column_List" >
+        page_id, parent_id, name, url, level_type, level_index, delete_flag, `desc`
+    </sql>
+    <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.phms.pojo.PageExample" >
+        select
+        <if test="distinct" >
+            distinct
+        </if>
+        <include refid="Base_Column_List" />
+        from page
+        <if test="_parameter != null" >
+            <include refid="Example_Where_Clause" />
+        </if>
+        <if test="orderByClause != null" >
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+        select
+        <include refid="Base_Column_List" />
+        from page
+        where page_id = #{pageId,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+        delete from page
+        where page_id = #{pageId,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteByExample" parameterType="com.phms.pojo.PageExample" >
+        delete from page
+        <if test="_parameter != null" >
+            <include refid="Example_Where_Clause" />
+        </if>
+    </delete>
+    <insert id="insert" parameterType="com.phms.pojo.Page" >
+        insert into page (page_id, parent_id, name,
+        url, level_type, level_index,
+        delete_flag, `desc`)
+        values (#{pageId,jdbcType=INTEGER}, #{parentId,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR},
+        #{url,jdbcType=VARCHAR}, #{levelType,jdbcType=INTEGER}, #{levelIndex,jdbcType=INTEGER},
+        #{deleteFlag,jdbcType=INTEGER}, #{desc,jdbcType=VARCHAR})
+
+        <selectKey keyProperty="pageId" order="AFTER" resultType="java.lang.Integer">
+            select LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    <insert id="insertSelective" parameterType="com.phms.pojo.Page" >
+        insert into page
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="pageId != null" >
+                page_id,
+            </if>
+            <if test="parentId != null" >
+                parent_id,
+            </if>
+            <if test="name != null" >
+                name,
+            </if>
+            <if test="url != null" >
+                url,
+            </if>
+            <if test="levelType != null" >
+                level_type,
+            </if>
+            <if test="levelIndex != null" >
+                level_index,
+            </if>
+            <if test="deleteFlag != null" >
+                delete_flag,
+            </if>
+            <if test="desc != null" >
+                `desc`,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="pageId != null" >
+                #{pageId,jdbcType=INTEGER},
+            </if>
+            <if test="parentId != null" >
+                #{parentId,jdbcType=INTEGER},
+            </if>
+            <if test="name != null" >
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="url != null" >
+                #{url,jdbcType=VARCHAR},
+            </if>
+            <if test="levelType != null" >
+                #{levelType,jdbcType=INTEGER},
+            </if>
+            <if test="levelIndex != null" >
+                #{levelIndex,jdbcType=INTEGER},
+            </if>
+            <if test="deleteFlag != null" >
+                #{deleteFlag,jdbcType=INTEGER},
+            </if>
+            <if test="desc != null" >
+                #{desc,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <select id="countByExample" parameterType="com.phms.pojo.PageExample" resultType="java.lang.Integer" >
+        select count(*) from page
+        <if test="_parameter != null" >
+            <include refid="Example_Where_Clause" />
+        </if>
+    </select>
+    <update id="updateByExampleSelective" parameterType="map" >
+        update page
+        <set >
+            <if test="record.pageId != null" >
+                page_id = #{record.pageId,jdbcType=INTEGER},
+            </if>
+            <if test="record.parentId != null" >
+                parent_id = #{record.parentId,jdbcType=INTEGER},
+            </if>
+            <if test="record.name != null" >
+                name = #{record.name,jdbcType=VARCHAR},
+            </if>
+            <if test="record.url != null" >
+                url = #{record.url,jdbcType=VARCHAR},
+            </if>
+            <if test="record.levelType != null" >
+                level_type = #{record.levelType,jdbcType=INTEGER},
+            </if>
+            <if test="record.levelIndex != null" >
+                level_index = #{record.levelIndex,jdbcType=INTEGER},
+            </if>
+            <if test="record.deleteFlag != null" >
+                delete_flag = #{record.deleteFlag,jdbcType=INTEGER},
+            </if>
+            <if test="record.desc != null" >
+                `desc` = #{record.desc,jdbcType=VARCHAR},
+            </if>
+        </set>
+        <if test="_parameter != null" >
+            <include refid="Update_By_Example_Where_Clause" />
+        </if>
+    </update>
+    <update id="updateByExample" parameterType="map" >
+        update page
+        set page_id = #{record.pageId,jdbcType=INTEGER},
+        parent_id = #{record.parentId,jdbcType=INTEGER},
+        name = #{record.name,jdbcType=VARCHAR},
+        url = #{record.url,jdbcType=VARCHAR},
+        level_type = #{record.levelType,jdbcType=INTEGER},
+        level_index = #{record.levelIndex,jdbcType=INTEGER},
+        delete_flag = #{record.deleteFlag,jdbcType=INTEGER},
+        `desc` = #{record.desc,jdbcType=VARCHAR}
+        <if test="_parameter != null" >
+            <include refid="Update_By_Example_Where_Clause" />
+        </if>
+    </update>
+    <update id="updateByPrimaryKeySelective" parameterType="com.phms.pojo.Page" >
+        update page
+        <set >
+            <if test="parentId != null" >
+                parent_id = #{parentId,jdbcType=INTEGER},
+            </if>
+            <if test="name != null" >
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="url != null" >
+                url = #{url,jdbcType=VARCHAR},
+            </if>
+            <if test="levelType != null" >
+                level_type = #{levelType,jdbcType=INTEGER},
+            </if>
+            <if test="levelIndex != null" >
+                level_index = #{levelIndex,jdbcType=INTEGER},
+            </if>
+            <if test="deleteFlag != null" >
+                delete_flag = #{deleteFlag,jdbcType=INTEGER},
+            </if>
+            <if test="desc != null" >
+                `desc` = #{desc,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where page_id = #{pageId,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.phms.pojo.Page" >
+        update page
+        set parent_id = #{parentId,jdbcType=INTEGER},
+        name = #{name,jdbcType=VARCHAR},
+        url = #{url,jdbcType=VARCHAR},
+        level_type = #{levelType,jdbcType=INTEGER},
+        level_index = #{levelIndex,jdbcType=INTEGER},
+        delete_flag = #{deleteFlag,jdbcType=INTEGER},
+        `desc` = #{desc,jdbcType=VARCHAR}
+        where page_id = #{pageId,jdbcType=INTEGER}
+    </update>
+
+    <select id="getAllRolePageByUserId" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select
+        p.*
+        FROM page p
+        left JOIN role_page rp on rp.page_id = p.page_id
+        LEFT JOIN user_role ur on ur.role_id = rp.role_id
+        WHERE ur.user_id = #{userId,jdbcType=VARCHAR}
+
+    </select>
+
+    <select id="getAllPageByRoleId" resultMap="BaseResultMap" parameterType="int" >
+        SELECT
+        p.*
+        FROM
+        page p
+        LEFT JOIN role_page rp ON rp.page_id = p.page_id
+        WHERE rp.role_id = #{roleId,jdbcType=INTEGER}
+    </select>
+
+    <select id="getAllPage" resultMap="BaseResultMap" >
+        SELECT
+        p.*
+        FROM
+        page p
+        WHERE p.`desc` &lt;&gt; "manager" or `desc` is NULL
+    </select>
+
+</mapper>

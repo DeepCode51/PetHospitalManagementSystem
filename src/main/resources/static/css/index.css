@@ -1,0 +1,91 @@
+html, body{
+	width:100%;
+	height:100%;
+}
+
+.index_top_div{
+	width:100%;
+	background-color: #EFEFEF;
+}
+.index_top_table{
+	width:100%;
+	height: 100%;
+	border-collapse: collapse;
+}
+
+.text_web{
+	font-size: 20px;
+	color: #FFFFFF;
+	letter-spacing: 1px;
+	font-weight: bold;
+	font-family:Microsoft YaHei;
+}
+.text_0{
+	color: #FFFFFF;
+	font-size: 13px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	margin-right: 5px;
+	cursor:pointer;
+}
+
+.l-link{ display:block; height:24px; line-height:24px; text-decoration:none; color:#333; padding-left:16px;border:1px solid white; margin:2px 4px;cursor:pointer;}
+.l-link:HOVER, .l-link-over{ background:#FFEEAC; border:1px solid #DB9F00;} 
+
+#editPassword_form table td{
+	padding: 2px;
+}
+
+#leftMenu{
+  background-color: #72C1BB;
+
+}
+
+.leftMenu_table{
+	width: 170px;
+	height: 40px;
+	border-collapse: collapse;
+	background-color: #72C1BB;
+	cursor: pointer;
+	margin-bottom: 2px;
+}
+.leftMenu_table .leftMenu_td_0{
+	width: 60px;
+}
+.leftMenu_table .leftMenu_td_1{
+	color: #FFFFFF;
+	font-size: 13px;
+	font-weight: bold;
+	letter-spacing: 0.5px;
+}
+.leftMenu_table .leftMenu_td_2{
+	width: 30px;
+}
+.leftMenu_table .leftMenu_td_2 img{
+	display:none;
+}
+
+#leftMenu .index_menu_level_0{
+	background-color: #72C1BB;
+}
+
+.index_menu_level_1{
+	color: #BFC0C2;
+	font-size: 13px;
+	font-weight: bold;
+	letter-spacing: 0.5px;
+	height: 40px;
+	line-height: 40px;
+	background-color: #5EA2A2;
+	cursor: pointer;
+	text-indent: 60px;
+	margin: 1px 0px;
+}
+
+.index_menu_level_ul{
+	display:none;
+}
+
+.index_menu_level_1_hover, .index_menu_level_1_checked{
+	background-color: #009688;
+	color: #FFF;
+}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html style="height: 90%; width: 100%" xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <!-- layui -->
+    <link type="text/css" rel="stylesheet" th:href="@{/css/page.css}" />
+    <link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}"  media="all"/>
+    <script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+</head>
+<body style="height: 90%;width: 100%; margin: 0">
+<script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}"></script>
+<script type="text/javascript" th:src="@{/js/echarts/echarts.js}"></script>
+<div id="container" style="height: 70%;width: 100%"></div>
+<span id="count">
+
+</span>
+</body>
+</html>
+
+<script type="text/javascript" th:inline="javascript">
+    var pets = [[${pets}]];
+    var tsCount = [[${tsCount}]];
+    var wsCount = [[${wsCount}]];
+    var hsCount = [[${hsCount}]];
+    var asCount = [[${asCount}]];
+    var dsCount = [[${dsCount}]];
+    var pt = [[${pt}]];
+    var ph = [[${ph}]];
+    var pw = [[${pw}]];
+    var pa = [[${pa}]];
+    var mt = [[${mt}]];
+    var mh = [[${mh}]];
+    var mw = [[${mw}]];
+    var ma = [[${ma}]];
+
+    var dom = document.getElementById("container");
+    var myChart = echarts.init(dom);
+    var app = {};
+    option = null;
+
+    function fulshEchart(names, mmdatas, mmValue){
+        console.log(names);
+        console.log(mmdatas);
+        console.log(mmValue);
+
+        option = {
+            title: {
+                text: '宠物健康分析'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                left: 'center',
+                data: names
+            },
+            radar: mmdatas,
+            series: mmValue
+        };
+
+        if (option && typeof option === "object") {
+            myChart.setOption(option, true);
+        }
+    }
+
+    $(function(){
+        var count = $('#count');
+        for (var i=0;i<tsCount.length; i++){
+            count.append(dsCount[i]+"&nbsp;&nbsp;&nbsp;");
+            count.append(tsCount[i]+"&nbsp;&nbsp;&nbsp;");
+            count.append(wsCount[i]+"&nbsp;&nbsp;&nbsp;");
+            count.append(hsCount[i]+"&nbsp;&nbsp;&nbsp;");
+            count.append(asCount[i]+"&nbsp;&nbsp;&nbsp;");
+            count.append("<hr/>");
+        }
+
+
+        var names = new Array();
+        for (var i=0; i<pets.length; i++){
+            names.push(pets[i].name);
+        }
+        var mmdatas = new Array();
+        var rr = 25;
+        for(var i=0; i<mt.length; i++ ){
+            var mmdata = new Object();
+            mmdata.indicator = new Array();
+            var d = new Object();
+            d.text = "体温";
+            d.max = mt[i];
+            mmdata.indicator.push(d);
+            d = new Object();
+            d.text = "体重";
+            d.max = mw[i];
+            mmdata.indicator.push(d);
+            d = new Object();
+            d.text = "身高";
+            d.max = mh[i];
+            mmdata.indicator.push(d);
+            d = new Object();
+            d.text = "饭量";
+            d.max = ma[i];
+            mmdata.indicator.push(d);
+            mmdata.center = new Array();
+            mmdata.center.push((25+i*25)+'%');
+            mmdata.center.push('40%');
+            mmdata.radius = 80;
+
+            mmdatas.push(mmdata);
+        }
+        var mmValue = new Array();
+        for(var i=0; i<pt.length; i++ ){
+            var tt = new Object();
+            tt.type = 'radar';
+            tt.radarIndex = i;
+            tt.tooltip = new Object();
+            tt.tooltip.trigger= 'item';
+            tt.areaStyle = new Object();
+            tt.data = new Array();
+            var ddO = new Object();
+            ddO.name=names[i];
+            ddO.value = new Array();
+            if (pt!="NaN"){
+                ddO.value.push(pt[i]);
+            }else {
+                ddO.value.push(0);
+            }
+            if (pw!="NaN"){
+                ddO.value.push(pw[i]);
+            }else {
+                ddO.value.push(0);
+            }
+            if (ph!="NaN"){
+                ddO.value.push(ph[i]);
+            }else {
+                ddO.value.push(0);
+            }
+            if (pa!="NaN"){
+                ddO.value.push(pa[i]);
+            }else {
+                ddO.value.push(0);
+            }
+            tt.data.push(ddO);
+            mmValue.push(tt);
+        }
+
+        console.log(names);
+        console.log(mmdatas);
+        console.log(mmValue);
+        fulshEchart(names, mmdatas, mmValue);
+    });
+</script>

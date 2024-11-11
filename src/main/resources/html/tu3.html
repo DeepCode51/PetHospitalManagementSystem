@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html style="height: 90%; width: 100%" xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8">
+	<!-- layui -->
+	<link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}"  media="all"/>
+	<script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+</head>
+<body style="height: 90%;width: 100%; margin: 0">
+<script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}"></script>
+<script type="text/javascript" th:src="@{/js/echarts/echarts.js}"></script>
+<script type="text/javascript" th:src="@{/js/echarts/china.js}"></script>
+<div id="container" style="height: 90%;width: 100%"></div>
+</body>
+</html>
+
+<script type="text/javascript" th:inline="javascript">
+	$(function() {
+		var dom = document.getElementById("container");
+		var myChart = echarts.init(dom);
+		var app = {};
+		option = null;
+		option = {
+			backgroundColor: {
+				type: 'linear',
+				x: 0,
+				y: 0,
+				x2: 0,
+				y2: 1,
+				colorStops: [{
+					offset: 0,
+					color: '#0c0d2b'
+				}, {
+					offset: 0.5,
+					color: '#0a0c3d'
+				}, {
+					offset: 1,
+					color: '#111629'
+				}],
+				globalCoord: false
+			},
+			title: {
+				text: '转化率',
+				subtext: '转化的百分率或分率',
+				link: 'https://gallery.echartsjs.com/explore.html?u=bd-1841183165&type=work',
+				target: 'blank',
+				x: 'center',
+				top: '10',
+				textStyle: {
+					color: '#FFF',
+					fontSize: 16,
+				}
+			},
+
+			tooltip: {
+				trigger: 'item',
+				formatter: "{a} <br/>{b} : {c}%"
+			},
+
+			legend: {
+				data: ['A', 'B', 'C', 'D', 'E'],
+				x: 'center',
+				y: '92%',
+				textStyle: {
+					color: '#FFF'
+				}
+			},
+
+			color: ['#c2c1bd', '#00a1e5', '#23c768', '#e5ce10', '#ff7e00', '#fe0000', ],
+
+			series: [
+
+				{
+					name: 'TIT',
+					type: 'funnel',
+					left: 'center',
+					width: '90%',
+					sort: 'ascending',
+					label: {
+						normal: {
+							formatter: '{b}',
+						},
+
+					},
+					labelLine: {
+						normal: {
+							show: true,
+							length: 30
+						}
+					},
+					itemStyle: {
+						normal: {
+							opacity: 0.3
+						}
+					},
+					tooltip: {
+						show: false
+					},
+
+					data: [{
+						value: 10,
+						name: 'A'
+					}, {
+						value: 20,
+						name: 'B'
+					},
+						{
+							value: 40,
+							name: 'C'
+						},
+						{
+							value: 60,
+							name: 'D'
+						},
+						{
+							value: 80,
+							name: 'E'
+						},
+						{
+							value: 100,
+							name: 'F'
+						}
+					]
+				},
+
+				{
+					name: 'TIT',
+					type: 'funnel',
+					left: 'center',
+					width: '80%',
+					maxSize: '80%',
+					sort: 'ascending',
+					label: {
+						normal: {
+							position: 'inside',
+							formatter: '{c}%',
+							textStyle: {
+								color: '#fff',
+								fontSize:14,
+							}
+						},
+						emphasis: {
+							position: 'inside',
+							formatter: '{b}: {c}%'
+						}
+					},
+					itemStyle: {
+						normal: {
+							opacity: 08,
+							borderColor: 'rgba(12, 13, 43, .9)',
+							borderWidth: 3,
+							shadowBlur: 5,
+							shadowOffsetX: 0,
+							shadowOffsetY: 5,
+							shadowColor: 'rgba(0, 0, 0, .6)'
+						}
+					},
+
+					data: [{
+						value: 2,
+						name: 'A'
+					}, {
+						value: 5,
+						name: 'B'
+					},
+						{
+							value: 12,
+							name: 'C'
+						},
+						{
+							value: 18,
+							name: 'D'
+						},
+						{
+							value: 25,
+							name: 'E'
+						},
+						{
+							value: 40,
+							name: 'F'
+						}
+					]
+				}
+			]
+		};
+		if (option && typeof option === "object") {
+			myChart.setOption(option, true);
+		}
+	});
+</script>

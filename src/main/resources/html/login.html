@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>登录页面</title>
+<script type="text/javascript" th:src="@{/js/jquery.min.js}" src="js/jquery.min.js" ></script>
+<style type="text/css">
+	body, html {
+		height: 100%;
+		margin: 0;
+		font-family: "Arial";
+		font-weight: lighter;
+		color: #626262;
+		background-color: #66e8dc;
+	}
+	.container {
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.loginBox {
+		width: 330px;
+		background-color: white;
+		box-shadow: 0px 0px 43px -2px rgba(135,130,135,1);
+		border-radius: 8px;
+		padding: 15px;
+	}
+	.userImage {
+		border-radius: 50%;
+		overflow: hidden;
+		width: 120px;
+		height: 120px;
+		margin: 10px auto 30px;
+	}
+	img {
+		width: 100%;
+	}
+	.input-wrapper {
+		position: relative;
+	}
+	.error-userName, .error-pass, .error-nickName {
+		position: absolute;
+		top: 5px;
+		padding: 5px 10px;
+		right: 0;
+		color: white;
+		background-color: #66e8dc;
+		border-radius: 10px;
+	}
+	.triangle {
+		width: 0;
+		height: 0;
+		border-left: 10px solid transparent;
+		border-right: 10px solid transparent;
+		border-top: 10px solid #66e8dc;
+		position: absolute;
+		right: 18px;
+		bottom: -8px;
+	}
+	.input2 {
+		display: block;
+		width: 300px;
+		padding: 15px 10px;
+		border-radius: 8px;
+		border: 1px solid #ececec;
+		margin: 10px 0;
+	}
+	.input3 {
+		outline: none;
+		width: 100%;
+		padding: 15px 10px;
+		margin-top: 35px;
+		border-radius: 8px;
+		background-color: #32bfb2;
+		color: white;
+		font-weight: lighter;
+	}
+	.input4 {
+		outline: none;
+		width: 100%;
+		padding: 15px 10px;
+		margin-top: 35px;
+		border-radius: 8px;
+		background-color: #b2bf00;
+		color: white;
+		font-weight: lighter;
+	}
+	.warning {
+		border-color: red
+	}
+	.confirmation {
+		width: 200px;
+		position: absolute;
+		top: 0;
+		border-radius: 50%;
+		overflow: hidden;
+		height: 200px;
+		left: 50%;
+		margin-left: -100px;
+		top: 50%;
+		margin-top: -100px;
+		box-shadow: 10px 10px 10px;
+		z-index: 10
+	}
+	.overlay {
+		background: rgba(14, 14, 14, 0.57);
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 9;}
+	.showOk {
+		animation: showOk 1s ease 1 normal;
+		width: 200px;
+		height: 200px;
+	}
+	@keyframes showOk {
+		from {
+			transform: scale(0);
+			opacity: 0
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
+	}
+</style>
+<!-- layer -->
+<link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}"/>
+<script type="text/javascript" th:src="@{/plug/layui/layui.all.js}"  src="plug/layui/layui.all.js" ></script>
+
+<script type="text/javascript">
+
+if(window != top){
+	//session 失效 判断有没父页面，有，改变父页面地址
+	top.location.href = location.href; 
+}
+$(function(){
+	$(".error-pass, .error-userName").hide();
+	$(".overlay").hide();
+	$(".confirmation").hide();
+	$(".index_top_div").focus();
+
+});
+
+
+function validateForm() {
+	var countErrors = 0;
+	var userName = $("#name");
+	var passInput = $("input[type=password]");
+
+	if(userName.val() < 1) {
+		$(".error-userName").fadeIn();
+		$(".userName-msg").html("用户名不能为空");
+		$(userName).addClass("warning");
+		countErrors++;
+	} else {
+		$(userName).removeClass("warning");
+	}
+
+	if(passInput.val().length < 5) {
+		$(".error-pass").fadeIn();
+		$(".pass-msg").html("密码长度不能小于5个字符");
+		$(passInput).addClass("warning");
+		countErrors++;
+	} else {
+		$(passInput).removeClass("warning");
+	}
+
+	setTimeout(function showErrorMsg() {
+		$(".error-userName, .error-pass").fadeOut();
+	}, 2000)
+
+	if(countErrors === 0) {
+		$(".overlay").show();
+		$(".confirmation").show();
+		login();
+
+	}
+}
+
+function login(){
+	// 准备参数
+	var param = new Object();
+	param.username = $.trim($("#name").val());
+	param.password = $.trim($("#password").val());
+
+
+	$.ajax({
+		type:"POST",
+		async:true,  //默认true,异步
+		data:param,
+		dataType:'json',
+		url:"/login",
+		success:function(data){
+			if(data.result == "success"){
+				window.location.href = "/main";
+			}else if(data.message == "PASSWORD_ERR" || data.message == "USERNAME_NOT_EXIST"){
+				layer.alert('用户名或密码错误', {icon: 2});
+				$("#name").val("");
+				$("#password").val("")
+			}else{
+				layer.alert('登陆失败！请找管理员授权!', {icon: 2});
+			}
+	    },
+	    error:function() {
+	    	layer.alert('系统错误,服务器正忙！', {icon: 2});
+	    }
+	});
+}
+
+
+function regist(){
+	window.location.href = "/regist";
+}
+
+function key_down(num){
+	if(num == 13) {
+		var name = $.trim($("#name").val());
+		var pass = $.trim($("#password").val());
+		
+		if(name && pass){
+			validateForm();
+		}else{
+			layer.closeAll(); //疯狂模式，关闭所有层
+		}
+	}
+}
+</script>
+</head>
+
+<body onkeydown="key_down(event.keyCode);">
+
+
+<div class="overlay"></div>
+
+<div class="container">
+	<div class="loginBox">
+		<div class="userImage">
+			<img src="imgs/catFace.png">
+		</div>
+		<form id="loginForm">
+			<div class="input-wrapper">
+				<label>用户名:</label>
+				<input type="text" id="name"  class="input2" placeholder="请输入用户名">
+				<div class="error-userName"><div class="userName-msg"></div><div class="triangle"></div></div>
+			</div>
+			<div class="input-wrapper">
+				<label>密码:</label>
+				<input type="password" id="password" class="input2" placeholder="密码">
+				<div class="error-pass"><div class="pass-msg"></div><div class="triangle"></div></div>
+			</div>
+			<input type="button" name="" value="登录" class="input3" onClick="validateForm()">
+			<input type="button" name="" value="注册" class="input4" onClick="regist()">
+		</form>
+	</div>
+</div>
+</body>
+</html>

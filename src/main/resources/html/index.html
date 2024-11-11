@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>宠物医院管理系统</title>
+<link type="text/css" rel="stylesheet" th:href="@{/css/page.css}"/>
+<link type="text/css" rel="stylesheet" th:href="@{/css/index.css}"/>
+<script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}" src="js/jquery/jquery-3.3.1.js" ></script>
+<link rel="stylesheet" th:href="@{/css/cloudstyle.css}" href="css/cloudstyle.css"/>
+
+<!-- layer -->
+<link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}"  media="all"/>
+<script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+<link type="text/css" rel="stylesheet" th:href="@{/js/layer/skin/layer.css}"/>
+<script type="text/javascript" th:src="@{/js/layer/layer.js}" ></script>
+
+<!-- validation -->
+<script type="text/javascript" th:src="@{/js/jquery/jquery.validate.js}" src="js/jquery/jquery.validate.js"></script>
+
+<style type="text/css">
+#footer {background: #72C1BB;min-width: 100%; height:50px; position:fixed; left:0px; bottom:0px; width:100%;z-index:99;}
+#footer p {text-align: center; color:#72C1BB; line-height:25px;font-size:12px;text-shadow: 0 0 #72C1BB;}
+</style>
+
+</head>
+<body >
+<table style="width:100%;height:100%;border-collapse: collapse;">
+	<tr valign="top" align="left" >
+		<td colspan="5" style="height:51px;">
+			<div class="index_top_div" style="height:51px;background: #72C1BB">
+				<table class="index_top_table"  >
+					<tr>
+						<td align="left" valign="middle" style="width: 170px;">
+							<img src="imgs/catFace.png" style="width: 50px; height: 50px; margin-left: 50px;display: inline;"/>
+						</td>
+						<td align="left" valign="middle" style="width: 200px;">
+							<div class="text_web">宠物医院管理系统</div>
+						</td>
+						<td align="right" valign="top">
+							<div align="right" style="margin-right:20px;margin-top:10px; position: absolute;top:0px; right: 0px;" >
+								<span class="text_0" >你好！</span>
+								<span class="text_0"  th:id="${user.id}" th:text="${user.name}" th:onclick="editUser(this)" ></span>
+								<span class="text_0"  id="repassword" >[修改密码]</span>
+								<span class="text_0"  id="loginOut" >[退出]</span>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</td>
+	</tr>
+	<tr valign="top" align="left">
+		<td style="background-color:#72C1BB;width:170px;">
+			<div id="leftMenu" class="layui-side-scroll" style="width: 170px;">
+			</div>
+		</td>
+		
+		<td style="height:100%;width:100%; background-color:#FFFFFF;">
+			<div class="layui-tab" lay-filter="demo" lay-allowclose="true" id="divCont" style="height:87%;width: 100%;">
+				
+                <ul class="layui-tab-title" style="margin-left: 10px;width: 1150px;">
+                </ul>
+                <ul class="rightmenu" style="display: none;position: absolute; margin-top:10px;">
+                    <li data-type="closeall" class="layui-btn layui-btn-radius layui-btn-danger">关闭所有</li>
+                    <li data-type="" class="layui-btn layui-btn-radius">取消</li>
+                </ul>
+                <div class="layui-tab-content " id="mainContent" >
+                </div>
+            </div>
+            <div style="margin-bottom: 50px;">
+			</div>
+			<div id="footer">
+				<div class="main">
+				<p>
+				<a rel="nofollow" href="http://www.baidu.com/" target="_blank"  style="color: #fff">公司地址：XXXXXXXX 电话：088-88889999</a>
+				</p>
+				<p>
+				<a rel="nofollow" href="http://www.baidu.com/" target="_blank"  style="color: #fff">&copy;Copyright(C)2020 Co.,Ltd 宠物医院管理系统 版权所有© </a>
+				</p>
+				</div>
+			</div>
+		</td>
+	</tr>
+</table>
+<div id="otherMenu" style="display:none; position: relative;" class="layui-tab layui-tab-card site-demo-button">
+	<div class="index_menu_level_0" >
+		<table class="leftMenu_table" >
+			<tr valign="middle" align="center">
+				<td class="leftMenu_td_0">
+					<img class="hover_2" alt="" src="imgs/index/default_02.png" />
+				</td>
+				<td class="leftMenu_td_1" align="left"></td>
+				<td class="leftMenu_td_2">
+					<img alt="" src="imgs/index/left_menu_arrow.png" />
+				</td>
+			</tr>
+		</table>
+	</div>
+	<ul class="index_menu_level_ul">
+
+	</ul>
+</div>
+
+<!-- 修改密码 -->
+<div id="editPassword_dialog" style="display:none;">
+	<form id="editPassword_form" style="margin:5px;">
+		<table style="">
+			<tr valign="middle">
+				<td align="right">旧密码：</td>
+				<td>
+					<input type="password" id="old_pass" name="old_pass" class="input_0" />
+				</td>
+				<td align="left" valign="middle" >
+					<span style="color:red;"></span>
+				</td>
+			</tr>
+			<tr valign="middle">
+				<td align="right">新密码：</td>
+				<td>
+					<input type="password" id="new_pass" name="new_pass" class="input_0" />
+				</td>
+				<td align="left" valign="middle" >
+					<span style="color:red;"></span>
+				</td>
+			</tr>
+			<tr valign="middle">
+				<td align="right">确认新密码：</td>
+				<td>
+					<input type="password" id="re_new_pass" name="re_new_pass" class="input_0" />
+				</td>
+				<td align="left" valign="middle" >
+					<span style="color:red;"></span>
+				</td>
+			</tr>	
+		</table>
+	</form>
+	<div align="center" style="margin:10px 10px 5px 0px;">
+		<button id="saveBtu"  class="layui-btn" lay-submit="" lay-filter="add">保存</button>
+		<button id="closeBtu" class="layui-btn" lay-submit="" lay-filter="add" >取消</button>
+	</div>
+</div>
+</body>
+</html>
+
+
+<script type="text/javascript"  th:inline="javascript">
+
+var topIframeHeight = 0;
+//调整iframe尺寸
+function FrameWH(id) {
+   // var h = $(window).height() -41- 10 - 60 -10-44 -10;
+   var iframe = document.getElementById(id);
+
+    var h = $(window).height();
+	if(iframe!=null){
+
+		iframe.onload=function(){
+   			//console.log(iframe);
+			var ih = iframe.clientHeight;
+			var bh = iframe.contentDocument.body.scrollHeight;
+			if(h<bh){
+				h = bh+50;
+			}
+    		$("iframe").css("height",h+"px");
+		}
+	}
+}
+
+function setFrameH(){
+	var h = $(window).height();
+	$("iframe").css("height",h+"px");
+}
+
+
+$(function(){
+	//initSize();
+	setFrameH();
+	//导入菜单数据
+	var pageList = [[${pageList}]];
+	//console.log(pageList);
+	//alert(JSON.stringify(pageList));
+	if(pageList){
+		$.each(pageList, function(index, page){
+			if(page.levelType == 0){
+				//一级菜单
+				if(page.desc){
+					$("#otherMenu .leftMenu_td_0 img.hover_2").first().attr("src", "/imgs/index/"+page.desc+"_02.png");
+				}else{
+					$("#otherMenu .leftMenu_td_0 img.hover_2").first().attr("src", "/imgs/index/default_02.png");
+				}
+				
+				$("#otherMenu .leftMenu_td_1").text(page.name);
+
+				$("#leftMenu").append("<div>"+$("#otherMenu").html()+"</div>");
+				
+				$("#leftMenu").find(".index_menu_level_ul").last().attr("id", "real_menu_"+page.pageId);
+				
+			}else if(page.levelType == 1){
+				//二级菜单
+				$("#real_menu_"+page.parentId).append("<li class='site-demo-active index_menu_level_1' lay-filter='demo' data-url='"+page.url+"' data-title='"+page.name+"' data-id='"+page.pageId+"'>"+page.name+"</li>");
+			}
+			
+		});
+	}
+	
+	//监听不可以关闭的iframe
+	var getIframe = function(iframeWin){
+		//这个iframe不可随便关闭
+		if(iframeWin.thisIframeCloseAlert){
+			return iframeWin.thisIframeCloseAlert;
+		}
+		if(iframeWin.frames.length > 0){
+			for(var i=0; i<iframeWin.frames.length; i++){
+				
+				var back = getIframe(iframeWin.frames[i]);
+				if(back != "canClose"){
+					return back;
+				};
+			}
+		}
+		return "canClose";
+	}
+	
+	$(".index_menu_level_0").click(function(){
+		if($(this).hasClass("index_menu_level_0_checked")){
+			$(this).removeClass("index_menu_level_0_checked");
+			$(this).next().slideUp();
+		}else{
+			$(".index_menu_level_0").removeClass("index_menu_level_0_checked");
+			$(".index_menu_level_ul").slideUp();
+			$(this).addClass("index_menu_level_0_checked");
+			$(this).next().slideDown();			
+		}
+	});
+	
+	$(".index_menu_level_1").hover(
+		function () {
+	    	$(this).addClass("index_menu_level_1_hover");
+	  	},
+	  	function () {
+	    	$(this).removeClass("index_menu_level_1_hover");
+	  	}
+	);
+
+	$(".index_menu_level_0").first().click();
+
+	$(".site-demo-active").first().click();
+	
+	//退出
+	$("#loginOut").click(function(){
+		layer.confirm('确认退出吗？', {icon: 3, title:'提示'}, function(index){
+		    window.location.href = "/logout";
+		    layer.close(index);
+		});
+	});
+	
+	//验证新旧密码一样
+	$.validator.addMethod(
+	    "rePassword",
+	    function (value, element, param){
+	    	return (value == $("#new_pass").val()); 
+	    },
+	    "与新密码不一样"
+    );
+	
+	$("#editPassword_form").validate({
+		//debug:true,
+	    /**//* 设置验证规则 */    
+	    rules: {     
+	    	old_pass: {     
+	            required:true,
+	            remote:{  
+	                 url:"/user/checkUserPassword",  
+	                 type:"post",  
+	                 dataType:"json",  
+	                 data:{password:function(){
+	                	 return $.trim($("#old_pass").val());
+	                 }},  
+	                 dataFilter: function(data, type) {  
+	                	if(data!='true' && data!='false'){
+	                		window.location.href = "/logout";	
+	                	}
+	                 	return data;
+	                 }  
+	              }
+	        },
+	        new_pass: {     
+	            required:true,
+	            rangelength:[6, 20]
+	        },
+	        re_new_pass: {     
+	        	rePassword:true
+	        }
+	    },      
+	    /**//* 设置错误信息 */    
+	    messages: {     
+	    	old_pass: {         
+	        	required:"请输入旧密码",
+	        	remote:"密码不正确"
+	        },
+	        new_pass: {
+	        	required:"新密码不可为空",
+	        	rangelength:"新密码必须在6-20个字符之间"
+	        }
+	    },      
+	    /**//* 设置验证触发事件 */
+	    onsubmit:true,
+	    /**//* 设置错误信息提示DOM */    
+	    errorPlacement: function(error, element) {   
+	    	$(element[0]).parent().next().find("span").text(error.html());  
+	    },
+	    success:function(error, element){
+	    	$(element[0]).parent().next().find("span").text("");  
+        },
+	    submitHandler: function (){
+	    	//alert("sunmit");
+	    	saveNewPass();
+	    }
+	});
+	
+	//修改密码
+	$("#repassword").click(function(){
+		$("#editPassword_dialog input").val("");
+		
+		$("#editPassword_dialog span").text("");
+		$("#editPassword_dialog input").focus();
+		
+		layer.open({
+		    type: 1,
+		    title: "修改密码",
+		    area: ['420px', '200px'], //宽高
+		    content: $("#editPassword_dialog")
+		});
+		
+	});
+	
+	function saveNewPass(){
+		/* client = new XMLHttpRequest();
+		client.open("saveNewPass","/updatePassword", "async = false");
+		$("#editPassword_form").submit();
+		console.log("修改密码保存!!!"); */
+		var pass = $("#editPassword_dialog #new_pass").val();
+		//步骤一:创建异步对象
+		var ajax = new XMLHttpRequest();
+		//步骤二:设置请求的url参数,参数一是请求的类型,参数二是请求的url,可以带参数,动态的传递参数starName到服务端
+		ajax.open('post','/user/updatePassword?password='+pass);
+		//步骤三:发送请求
+		ajax.send();
+		//步骤四:注册事件 onreadystatechange 状态改变就会调用
+		ajax.onreadystatechange = function () {
+		   if (ajax.readyState==4 &&ajax.status==200) {
+		    //步骤五 如果能够进到这个判断 说明 数据 完美的回来了,并且请求的页面是存在的
+		　　　　//console.log(ajax.responseText);//输入相应的内容
+				if(ajax.responseText == "SUCCESS"){
+					layer.alert('保存成功！', {icon: 1}, function(index){
+						layer.closeAll();
+						window.location.href = "/logout";	
+					});
+				}else{
+					layer.alert('修改失败！', {icon: 0}, function(index){
+						layer.close(index);
+					});
+				}
+		  　　}
+		}
+	}
+	
+	//修改密码，保存
+	$("#saveBtu").click(function(){
+		$("#editPassword_form").submit();
+	}); 
+	
+	//修改密码，取消
+	$("#closeBtu").click(function(){
+		layer.closeAll();
+	});
+
+
+layui.use('element', function() {
+	var $ = layui.jquery;
+	var element = layui.element; //Tab的切换功能，切换事件监听等，需要依赖element模块
+	
+	//触发事件
+	var active = {
+	    //在这里给active绑定几项事件，后面可通过active调用这些事件
+	    tabAdd: function(url,id,name) {
+	        //新增一个Tab项 传入三个参数，分别对应其标题，tab页面的地址，还有一个规定的id，是标签中data-id的属性值
+	        //关于tabAdd的方法所传入的参数可看layui的开发文档中基础方法部分
+	        element.tabAdd('demo', {
+	            title: name,
+	            content: '<iframe id="myIframe'+id+'" data-frameid="'+id+'" frameborder="0" src="'+url+'" style="width:100%; height:99%;"></iframe>',
+	            id: id //规定好的id
+	        })
+	        CustomRightClick(id); //给tab绑定右击事件
+	        FrameWH("myIframe"+id);  //计算ifram层的大小
+	    },
+	    tabChange: function(id) {
+	        //切换到指定Tab项
+	        element.tabChange('demo', id); //根据传入的id传入到指定的tab项
+	    }, 
+	    tabDelete: function (id) {
+	    	element.tabDelete("demo", id);//删除
+	    }
+	    , tabDeleteAll: function (ids) {//删除所有
+	        $.each(ids, function (i,item) {
+	            element.tabDelete("demo", item); //ids是一个数组，里面存放了多个id，调用tabDelete方法分别删除
+	        })
+	    }
+	};
+	/* tab切换自动刷新tab? */
+	element.on('tab(demo)', function(data){
+		setFrameH();
+		$(".layui-tab-item.layui-show").css("height", "88%");
+		var src=$(".layui-tab-item.layui-show").find("iframe").attr("src");
+		$(".layui-tab-item.layui-show").find("iframe").attr("src",src);
+	});
+	
+	//当点击有site-demo-active属性的标签时，即左侧菜单栏中内容 ，触发点击事件
+	$('.site-demo-active').click(function() {
+	    var dataid = $(this);
+	
+	    //这时会判断右侧.layui-tab-title属性下的有lay-id属性的li的数目，即已经打开的tab项数目
+	    if ($(".layui-tab-title li[lay-id]").length <= 0) {
+	        //如果比零小，则直接打开新的tab项
+	        active.tabAdd(dataid.attr("data-url"), dataid.attr("data-id"),dataid.attr("data-title"));
+	    } else {
+	        //否则判断该tab项是否以及存在
+	        var isData = false; //初始化一个标志，为false说明未打开该tab项 为true则说明已有
+	        $.each($(".layui-tab-title li[lay-id]"), function () {
+	            //如果点击左侧菜单栏所传入的id 在右侧tab项中的lay-id属性可以找到，则说明该tab项已经打开
+	            if ($(this).attr("lay-id") == dataid.attr("data-id")) {
+	                isData = true;
+	                //////////点击导航重复刷新-----------////////////
+	                //$(".layui-tab-item.layui-show").css("height", "88%");
+	                //重复加载两次！！！！
+	                //var src=$(".layui-tab-item.layui-show").find("iframe").attr("src");
+	        		//$(".layui-tab-item.layui-show").find("iframe").attr("src",src);
+	            }
+	        });
+	       // console.log("isData-----"+isData);
+	        if (isData == false) {
+	            //标志为false 新增一个tab项
+	            $(".layui-tab-item.layui-show").css("height", "88%");
+	            active.tabAdd(dataid.attr("data-url"), dataid.attr("data-id"),dataid.attr("data-title"));
+	        }
+	    }
+	    $(".layui-tab-item.layui-show").css("height", "88%");
+	    //console.log("id----------"+dataid.attr("data-id"));
+	    //最后不管是否新增tab，最后都转到要打开的选项页面上
+	    active.tabChange(dataid.attr("data-id"));
+	});
+	
+	$(".site-demo-active").first().click();
+	
+	function CustomRightClick(id) {
+	    //取消右键  rightmenu属性开始是隐藏的 ，当右击的时候显示，左击的时候隐藏
+	    $('.layui-tab-title li').on('contextmenu', function () { return false; })
+	    $('.layui-tab-title,.layui-tab-title li').click(function () {
+	        $('.rightmenu').hide();
+	    });
+	    //桌面点击右击 
+	    $('.layui-tab-title li').on('contextmenu', function (e) {
+	        var popupmenu = $(".rightmenu");
+	        popupmenu.find("li").attr("data-id",id); //在右键菜单中的标签绑定id属性
+	
+	        //判断右侧菜单的位置 
+	        l = ($(document).width() - e.clientX) < popupmenu.width() ? (e.clientX - popupmenu.width()) : e.clientX;
+	        t = ($(document).height() - e.clientY) < popupmenu.height() ? (e.clientY - popupmenu.height()) : e.clientY;
+	        popupmenu.css({ left: l, top: t }).show(); //进行绝对定位
+	        //alert("右键菜单")
+	        return false;
+	    });
+	}
+	
+	$(".rightmenu li").click(function () {
+	    //右键菜单中的选项被点击之后，判断type的类型，决定关闭所有还是关闭当前。
+	    if ($(this).attr("data-type") == "closethis") {
+	        //如果关闭当前，即根据显示右键菜单时所绑定的id，执行tabDelete
+	        active.tabDelete($(this).attr("data-id"))
+	    } else if ($(this).attr("data-type") == "closeall") {
+	        var tabtitle = $(".layui-tab-title li");
+	        var ids = new Array();
+	        $.each(tabtitle, function (i) {
+	            ids[i] = $(this).attr("lay-id");
+	        })
+	        //如果关闭所有 ，即将所有的lay-id放进数组，执行tabDeleteAll
+	        active.tabDeleteAll(ids);
+	    }
+	
+	    $('.rightmenu').hide(); //最后再隐藏右键菜单
+	})
+	 
+});
+
+});
+
+//修改标签
+function editUser(obj){
+	layer.open({
+	    type: 2,
+	    title: '修改个人信息',
+	    area: ['50%', '80%'],
+	    content: '/user/editUserPage?userId='+obj.id//iframe的url
+	});
+}
+</script>

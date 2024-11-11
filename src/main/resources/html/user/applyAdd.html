@@ -1,0 +1,223 @@
+<!DOCTYPE html >
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>添加</title>
+<link type="text/css" rel="stylesheet" th:href="@{/css/page.css}" />
+<script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}" ></script>
+<!-- validation -->
+<script type="text/javascript" th:src="@{/js/jquery/jquery.validate.js}" ></script>
+<!-- layer -->
+<link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}" />
+<script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+
+<link type="text/css" rel="stylesheet" th:href="@{/js/layer/skin/layer.css}"/>
+<script type="text/javascript" th:src="@{/js/layer/layer.js}" ></script>
+
+<style type="text/css">
+
+.need_span{
+	color: red;
+	display: none;
+}
+.need_0, .validation_span{
+	color: red;
+}
+.need_1{
+	color: #666666;
+}
+.input_0{
+	width: 200px;
+}
+.form_table td{
+	padding: 5px;
+}
+.text_ad_0{
+	font-weight: bold;
+	color: #444444;
+	white-space: nowrap;
+}
+</style>
+
+<script type="text/javascript"  th:inline="javascript">
+layui.use('laydate', function(){
+	  var laydate = layui.laydate;
+
+	  //执行一个laydate实例
+	  laydate.render({
+	      elem: '#appTime' //指定元素
+          ,type: 'datetime'
+	      ,trigger : 'click'
+          ,min:minDate()
+	  });
+});
+
+// 设置最小可选的日期
+function minDate(){
+    var now = new Date();
+    return now.getFullYear()+"-" + (now.getMonth()+1) + "-" + now.getDate();
+}
+
+var petId = [[${petId}]];
+
+$(function(){
+    $('form').validate({
+        debug:true,
+        /**//* 设置验证规则 */
+        rules: {
+            info: {
+                required: true
+            },
+            phone: {
+                required: true
+            },
+            address: {
+                required: true
+            },
+            appTime: {
+                required: true
+            }
+        },
+        /**//* 设置错误信息 */
+        messages: {
+            info: {
+                required:"内容不可为空"
+            },
+            appTime: {
+                required:"预约时间不可为空"
+            },
+            phone: {
+                required:"预约电话不可为空"
+            },
+            address: {
+                required:"预约地址不可为空"
+            }
+        },
+        /**//* 设置验证触发事件 */
+        onsubmit:true,
+        /**//* 设置错误信息提示DOM */
+        errorPlacement: function(error, element) {
+            $(element[0]).parent().find(".validation_span").text(error.html()).show();
+        },
+        success:function(error, element){
+            $(element[0]).parent().find(".validation_span").text("");
+        },
+        submitHandler: function (){
+            save();
+        }
+    });
+	
+	//返回按钮
+	$("#backBtu").click(function(){
+		layer.confirm('确认返回吗？', {icon: 3, title:'提示'}, function(index){
+		    parent.layer.closeAll();
+		});
+	});
+});
+
+//保存
+function save(){
+	var param = new Object();
+	param.petId = petId;
+	param.info = $.trim($("#info").val());
+	param.phone = $.trim($("#phone").val());
+	param.address = $.trim($("#address").val());
+    param.appTime = $("#appTime").val();
+
+	console.log(param);
+	var urlStr = "/user/apply/doAdd";
+	
+	layer.confirm('确认保存吗？', {icon: 3, title:'提示'}, function(index){
+		$.ajax({
+    		type:"POST",
+    		async:true,  //默认true,异步
+    		data:param,
+    		url:urlStr,
+    		success:function(data){
+    			console.log(data);
+    			if(data == "SUCCESS"){
+    				layer.alert('保存成功！', {icon: 1}, function(indexOk){
+       					parent.search();
+       	    			parent.$("#add_iframe iframe").attr("src", "");
+       			    	parent.$("div").first().show();
+       			    	parent.$("#add_iframe").hide();
+       			    	parent.layer.closeAll();
+       				});
+    			}else if(data == "noPetId"){
+                    layer.alert('没有选中宠物！', {icon: 2}, function(indexNo){
+                        parent.layer.closeAll();
+                    });
+    			}else{
+    				layer.alert('保存失败！', {icon: 2}, function(indexNo){
+    					parent.layer.closeAll();
+       				});
+    			}
+    	    }
+    	});
+	});
+}
+
+</script>
+</head>
+<body>
+<div  style="margin-left:15px; height: 400px;">
+<div class="first_div" style="border:none;">
+	<div id="adListDiv" align="left" >
+	<form>
+		<table class="form_table" style="border-collapse: collapse;margin-left:20px;margin-top:10px;">
+            <tr>
+                <td align="right" >
+                    <span class="need_0">*</span>
+                    <span class="text_ad_0">电话：</span>
+                </td>
+                <td>
+                    <input id="phone" type="text" name="phone" class="input_0"/>
+                    <span class="validation_span"></span>
+                </td>
+            </tr>
+            <tr>
+                <td align="right" >
+                    <span class="need_0">*</span>
+                    <span class="text_ad_0">地址：</span>
+                </td>
+                <td>
+                    <input id="address" type="text" name="address" class="input_0"/>
+                    <span class="validation_span"></span>
+                </td>
+            </tr>
+			<tr>
+                <td align="right" >
+                    <span class="need_0">*</span>
+                    <span class="text_ad_0">内容：</span>
+                </td>
+                <td>
+                    <textarea id="info" name="info" rows="4" cols="26"></textarea>
+                    <span class="validation_span"></span>
+                </td>
+            </tr>
+			<tr>
+                <td align="right" >
+                    <span class="need_0">*</span>
+                    <span class="text_ad_0">预约时间：</span>
+                </td>
+                <td>
+                    <input id="appTime" type="text" name="appTime" class="input_0" value=""/>
+                    <span class="validation_span"></span>
+                </td>
+            </tr>
+			<tr>
+				<td colspan="2" align="left" >
+					<div style="margin-top:10px;margin-bottom:20px;margin-left:120px;">
+						<input type="submit" class="layui-btn" lay-submit="" lay-filter="add" id="saveBtu" name="saveBtu" value="确定" style="" />
+						<input type="button" class="layui-btn" lay-submit="" lay-filter="add" id="backBtu" name="backBtu" value="返回" style="margin-left:20px;" />
+					</div>
+				</td>
+			</tr>
+		</table>
+	</form>
+		</div>
+	</div>
+</div>
+</body>
+</html>

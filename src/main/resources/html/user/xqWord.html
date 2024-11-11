@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2003-2019, CKSource - Frederico Knabben. All rights reserved.
+For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>详情</title>
+    <script src="/samples/ckeditor.js"></script>
+    <script src="/samples/samples/js/sample.js"></script>
+    <link rel="stylesheet" href="/samples/samples/css/samples.css">
+    <link rel="stylesheet" href="/samples/samples/toolbarconfigurator/lib/codemirror/neo.css">
+    <link type="text/css" rel="stylesheet" th:href="@{/css/page.css}"/>
+    <script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}"></script>
+    <link type="text/css" rel="stylesheet" th:href="@{/js/layer/skin/layer.css}"/>
+    <script type="text/javascript" th:src="@{/js/layer/layer.js}" ></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="Try the latest sample of CKEditor 4 and learn more about customizing your WYSIWYG editor with endless possibilities.">
+</head>
+
+<script>
+    $(function(){
+        var html =  $("#conentHtml").val();
+        console.log(html);
+        $("#content").append(html);
+    });
+</script>
+<body id="main">
+
+<div  style="margin-left:15px; height: 400px;">
+    <div class="first_div" style="border:none;">
+        <div id="adListDiv" align="left" >
+            <input th:value="${c}" type="hidden" id="conentHtml"/>
+            <div class="right">
+                <!--标题-->
+                <div class="ctitle ctitle1" id="title"><h1 align="center"><span th:text="${title}">标题</span></h1></div>
+                <div style="text-align:center;color: #0C0C0C;font-size: larger">发布日期：<span th:text="${time}">时间</span>&nbsp;&nbsp;&nbsp;查看次数：<span th:text="${view}">次数</span>次</div>
+               <hr/>
+                <div class="pboxContent" style="overflow-x:auto;padding-right:50px">
+                    <p>&nbsp;</p>
+                </div>
+                <!--内容-->
+                <div id="content" style="width: 700px; padding-left: 55px;"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

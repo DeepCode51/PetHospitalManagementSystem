@@ -1,0 +1,170 @@
+<!DOCTYPE html >
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>选择用户</title>
+<link type="text/css" rel="stylesheet" th:href="@{/css/page.css}"/>
+<script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}"></script>
+<!-- mmGrid -->
+<link rel="stylesheet" type="text/css" th:href="@{/plug/mmGrid/mmGrid.css}"/>
+<script type="text/javascript"  th:src="@{/plug/mmGrid/mmGrid.js}" ></script>
+<!-- mmGrid page -->
+<link rel="stylesheet" type="text/css" th:href="@{/plug/mmGrid/mmPaginator.css}"/>
+<script type="text/javascript" th:src="@{/plug/mmGrid/mmPaginator.js}" ></script>
+<!-- zTree -->
+<link rel="stylesheet" type="text/css" th:href="@{/plug/zTree/css/zTreeStyle/zTreeStyle.css}"/>
+<script type="text/javascript" th:src="@{/plug/zTree/js/jquery.ztree.core.js}" ></script>
+<script type="text/javascript" th:src="@{/plug/zTree/js/jquery.ztree.excheck.js}" ></script>
+<script type="text/javascript" th:src="@{/plug/zTree/js/jquery.ztree.exedit.js}" ></script>
+<!-- layer -->
+<link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}"  media="all"/>
+<script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+
+<link type="text/css" rel="stylesheet" th:href="@{/js/layer/skin/layer.css}"/>
+<script type="text/javascript" th:src="@{/js/layer/layer.js}" ></script>
+
+<style type="text/css">
+.mmGrid,.mmPaginator{
+    font-size: 12px;
+}
+a.select{}
+a.select:HOVER {color:orange;}
+
+.del_span{font-size:14px;color:#111111;font-family::Microsoft YaHei;border:1px solid #666666;padding:3px 7px;background-color:#D6D6D6;margin:5px 5px 0px 0px;display:inline-block;}
+.del_png{width:13px;cursor:pointer;margin-left:5px;vertical-align:-1px;}
+
+</style>
+
+<script type="text/javascript">
+
+var roleList = parent.roleList;
+var roleObj = parent.roleObj;
+
+$(function(){
+	
+	//表格
+	$('#exampleTable').mmGrid({
+    	root:'rows',
+		url:"/admin/getAllUserByRoleId",
+		params:{"roleId": parent.roleNodeChecked.roleId, "roleNot": "roleNot"},
+		fullWidthRows: true,
+		showBackboard: false,
+    	width: 'auto',
+    	height: 'auto',
+    	//multiSelect: true,
+    	fullWidthRows: true, //表格第一次加载数据时列伸展，自动充满表格
+        //checkCol: true,
+        nowrap: true,
+        indexCol: true,  //索引列
+        cols: [{title: 'ID', name: 'id', width:60, hidden:true},
+			   {title: '姓名', name: 'name', width:80},
+			   {title: '联系电话', name: 'phone', width:100},
+
+			   {title: '类型', name: 'role', width:50, renderer:function(val, item, rowIndex){
+					   if(val == 1){
+						   return "<span style='color:red'>超级管理员</span>";
+					   }else if(val == 2){
+						   return "<span style='color:green'>普通用户</span>";
+					   }else if(val == 3){
+						   return "<span style='color:blue'>医护人员</span>";
+					   }
+			   }},
+			   {title: '操作', name: 'roleId', width:40, align:'center', renderer:function(val, item, rowIndex){
+				   
+				   var btn = "<a href='#' class='select' onclick='selectUser(this)' key='"+item.id+"' val='"+item.name+"' >选择</a>";
+				   //人已经被选择
+				   if($(".del_span[key='"+item.id+"']").length > 0){
+					   btn = "<a href='#' class='select' onclick='selectUser(this)' key='"+item.id+"' val='"+item.name+"' style='display:none;' >选择</a>";
+				   }
+				   return btn;
+			   }}
+           ],
+        cellSelected:function(e, item, rowIndex, colIndex){
+        	alert(JSON.stringify(item));
+        	alert(rowIndex);
+        	alert(colIndex);
+        },
+        plugins : [
+        	$('#paginator11-1').mmPaginator({
+        		totalCountName: 'total',   //对应MMGridPageVoBean count
+        		page: 1,                   //初始页
+        		pageParamName: 'page',     //当前页数
+        		limitParamName: 'limit', //每页数量
+        		limitList: [10, 20, 40, 50]
+        	})
+        ]
+    });	
+	
+	$("#select_div").on("click", '.del_png', function(){
+		$(this).parent().remove();
+		//表格重新加上
+		$("a.select[key='"+$(this).parent().attr("key")+"']").show();
+	});
+	$("#select_div").on("mouseenter", '.del_png', function(){
+		$(this).attr("src", "/imgs/page/delete_1.png");
+	});
+	$("#select_div").on("mouseleave", '.del_png', function(){
+		$(this).attr("src", "/imgs/page/delete.png");
+	});
+});
+
+function selectUser(obj){
+	//alert($(obj).attr('key')+"  "+$(obj).attr('val'));
+	$("#select_div").append("<span class='del_span' key='"+$(obj).attr('key')+"' >"+$(obj).attr('val')+"<img class='del_png' title='删除' src='/imgs/page/delete.png' /></span>");
+	$(obj).hide();
+}
+
+
+function saveUser(){
+	layer.confirm('确认保存吗？', {icon: 3, title:'提示'}, function(index){
+		var layerSaving = layer.msg('保存中...', {icon: 16, time: 0, shade: [0.3, '#000']});
+		//被选择的所有人
+    	var param = [];
+    	param.push({"name":"roleId", "value":parent.roleNodeChecked.roleId});
+    	$("#select_div").find("span.del_span").each(function(index, value){
+    		param.push({"name":"userIds", "value":$(value).attr("key")});
+    	});
+    	
+    	$.ajax({
+    		type:"POST",
+    		async:false,  //默认true,异步
+    		url:"/admin/addUserRole",
+    		data:param,
+    		success:function(data){
+    			layer.close(layerSaving);
+				if(data == "SUCCESS"){
+    				layer.alert('保存成功！', {icon: 1}, function(indexOk){
+    					parent.afterSaveUserRole();
+    					layer.close(indexOk);
+    				});
+    			}else{
+    				layer.alert('保存失败！', {icon: 0}, function(indexOk){
+    					parent.afterSaveUserRole();
+    					layer.close(indexOk);
+    				});
+    			}
+    	    }
+    	});
+	});
+	
+}
+
+</script>
+</head>
+<body style="">
+
+	<div style="margin:10px;" id="table_div">
+		<table id="exampleTable"></table>
+		<div style="text-align:right;">
+	    	<div id="paginator11-1"></div>
+	    </div>
+	</div>
+	
+	<div style="margin:10px;" id="select_div">
+		
+	</div>
+	
+	<button class="layui-btn layui-btn-radius" onclick="saveUser()" style="float:right;margin-right:10px;margin-bottom:10px;" title="保存">保存</button>
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html >
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>修改个人信息</title>
+<link type="text/css" rel="stylesheet" th:href="@{/css/page.css}" />
+<script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}" ></script>
+<!-- validation -->
+<script type="text/javascript" th:src="@{/js/jquery/jquery.validate.js}" ></script>
+<!-- layer -->
+<link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}" />
+<script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+
+<link type="text/css" rel="stylesheet" th:href="@{/js/layer/skin/layer.css}"/>
+<script type="text/javascript" th:src="@{/js/layer/layer.js}" ></script>
+
+<style type="text/css">
+
+.need_span{
+	color: red;
+	display: none;
+}
+.need_0, .validation_span{
+	color: red;
+}
+.need_1{
+	color: #666666;
+}
+.input_0{
+	width: 200px;
+}
+.form_table td{
+	padding: 5px;
+}
+.text_ad_0{
+	font-weight: bold;
+	color: #444444;
+	white-space: nowrap;
+}
+</style>
+
+<script type="text/javascript"  th:inline="javascript">
+
+layui.use(['laydate','upload'], function(){
+	  var laydate = layui.laydate;
+	  var upload = layui.upload;
+
+	  //执行一个laydate实例
+	  laydate.render({
+	    elem: '#userBirthday' //指定元素
+	  });
+
+	console.log(upload);
+	//普通图片上传
+	var uploadInst = upload.render({
+		elem: '#test1'
+		,multiple: true
+		,url: '/layuiUpload' //改成您自己的上传接口
+		,before: function(obj){
+			console.log(obj);
+			//预读本地文件示例，不支持ie8
+			obj.preview(function(index, file, result){
+				$('#demo1').attr('src', result); //图片链接（base64）
+			});
+		}
+		,done: function(res){
+			console(res);
+			//如果上传失败
+			if(res.code > 0){
+				return layer.msg('上传失败');
+			}
+			//上传成功
+		}
+		,error: function(){
+			//演示失败状态，并实现重传
+			var demoText = $('#demoText');
+			demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+			demoText.find('.demo-reload').on('click', function(){
+				uploadInst.upload();
+			});
+		}
+	});
+});
+
+function getTime(val){
+	if(val){		
+		val = val.split("T");
+		return val[0]; 
+	}
+	return "";
+}
+	
+var manageUser = [[${manageUser}]];
+
+$(function(){
+   	if(manageUser){
+   		//修改
+   		$(".top_page_name").text("修改个人信息");
+   		//回填值
+   		$("#id").val(manageUser.id);
+   		$("#name").val(manageUser.name);
+   		$("#phone").val(manageUser.phone);
+   		$("#email").val(manageUser.email);
+   		$("#idCard").val(manageUser.idCard);
+   		$("#department").val(manageUser.department);
+   		$("#address").val(manageUser.address);
+   	}
+	//验证数字长度
+	$.validator.addMethod(
+	    "mobilephone",
+	    function (value, element, param){
+	    	var length = value.length; 
+	    	var mobile = /^[0-9]{11}$/;
+	    	return this.optional(element) || (length == param && mobile.test(value)); 
+	    },
+	    "请输入正确的11位手机号码"
+    );
+	
+	//验证工作号码
+	$.validator.addMethod(
+	    "workNumber",
+	    function (value, element, param){
+	    	//var length = value.length; 
+	    	var mobile = /^((\d{3,5})-)(\d{6,10})(-(\d{1,5}))?$/;
+	    	return this.optional(element) || mobile.test(value); 
+	    },
+	    "请输入正确的工作号码"
+    );
+	
+	//验证id只包含数字字母
+	$.validator.addMethod(
+	    "withOutChinese",
+	    function (value, element, param){
+	    	var withOutChinese = /^[\w@.-]+$/;
+	    	return this.optional(element) || withOutChinese.test(value); 
+	    },
+	    "请输入字母和数字的组合(可以有@_.-)"
+    );
+	
+	//验证姓名(中文，数字，字母)
+	$.validator.addMethod(
+	    "onlyName",
+	    function (value, element, param){
+	    	var withOutChinese = /^([\u4E00-\u9FA5]|\w)*[^_]$/;
+	    	return this.optional(element) || withOutChinese.test(value); 
+	    },
+	    "请输入正确的姓名"
+    );
+	
+	//开始验证     
+	$('form').validate({
+		debug:true,
+	    /**//* 设置验证规则 */    
+	    rules: {
+	        name: {
+	            required:true,
+	            rangelength:[2, 20],
+	            onlyName:true
+	        },
+	        phone: {
+	        	required:true,
+	        	mobilephone:11
+	        },
+	        email: {
+	        	//required:true,
+	        	email:true,
+	        	maxlength:100
+	        },
+			idCard: {
+	        	required:true,
+	        	 rangelength:[18, 18],
+	        },
+			address: {
+				required:true
+			}
+	    },      
+	    /**//* 设置错误信息 */    
+	    messages: {     
+	        name: {
+	        	required:"姓名不可为空",
+	        	rangelength:"姓名必须在2-20个字符之间",
+	        	onlyName:"请输入正确的姓名(中文,数字,字母)"
+	        },
+	        phone: {
+	        	required:"移动电话号码不可为空",
+	        	mobilephone:"请输入正确的手机号码"
+	        },
+			email: {
+	        	email:"请输入正确的邮箱",
+	        	maxlength:"最多100个字符"
+	        },
+	        address: {
+	        	maxlength:"最多100个字符"
+	        }
+	        ,
+			idCard: {
+	        	required:"身份证不可为空",
+	        	rangelength:"身份证不正确",
+	        }
+	    },      
+	    /**//* 设置验证触发事件 */
+	    onsubmit:true,
+	    /**//* 设置错误信息提示DOM */    
+	    errorPlacement: function(error, element) {   
+	    	$(element[0]).parent().find(".validation_span").text(error.html()).show();  
+	    },
+	    success:function(error, element){
+	    	$(element[0]).parent().find(".validation_span").text("");  
+        },
+	    submitHandler: function (){
+	    	save();
+	    }
+	});
+	
+	//返回按钮
+	$("#backBtu").click(function(){
+		layer.confirm('确认返回吗？', {icon: 3, title:'提示'}, function(index){
+		    parent.layer.closeAll();
+		});
+	});
+});
+
+function closeSelf(){
+    var i = layer.getFrameIndex();
+	layer.close(i);
+}
+
+//保存
+function save(){
+	var param = new Object();
+	param.name = $.trim($("#name").val());
+	param.phone = $.trim($("#phone").val());
+	param.email = $.trim($("#email").val());
+	param.idCard = $.trim($("#idCard").val());
+	param.address = $.trim($("#address").val());
+	param.department = $("#department").val();
+	
+	var urlStr = "/user/updateUser";
+	if(manageUser){
+		//修改
+		param.id = manageUser.id
+	}
+	
+	layer.confirm('确认保存吗？', {icon: 3, title:'提示'}, function(index){
+		$.ajax({
+    		type:"POST",
+    		async:true,  //默认true,异步
+    		data:param,
+    		url:urlStr,
+    		success:function(data){
+    			if(data == "SUCCESS"){
+    				layer.alert('保存成功！', {icon: 1}, function(indexOk){
+    					parent.layer.closeAll();
+       				});
+    			}else{
+    				layer.alert('保存失败！', {icon: 3}, function(indexNo){
+    					parent.layer.closeAll();
+       				});
+    			}
+    	    }
+    	});
+	});
+}
+
+</script>
+</head>
+<body>
+<div  style="margin-left:15px; height: 400px;">
+<div class="first_div" style="border:none;">
+	<div id="adListDiv" align="left" >
+	<form>
+		<table class="form_table" style="border-collapse: collapse;margin-left:20px;margin-top:10px;">
+			<!--<tr>
+				<td align="right">
+					<div class="layui-upload">
+						<button type="button" class="layui-btn" id="test1">上传图片</button>
+						<div class="layui-upload-list">
+							<img class="layui-upload-img" id="demo1" width="100px" height="100px">
+							<p id="demoText"></p>
+						</div>
+					</div>
+				</td>
+			</tr>-->
+			<tr>
+				<td align="right" >
+					<span class="need_0">*</span>
+					<span class="text_ad_0">姓名：</span>
+				</td>
+				<td>
+					<input id="name" type="text" name="name" class="input_0"/>
+					<span class="validation_span"></span>
+				</td>
+			</tr>
+			
+			<tr>
+				<td align="right" >
+					<span class="need_0">*</span>
+					<span class="text_ad_0">联系电话：</span>
+				</td>
+				<td>
+					<input id="phone" type="text" name="phone" class="input_0" />
+					<span class="validation_span"></span>
+				</td>
+			</tr>
+
+			<tr style="">
+				<td align="right" >
+					<span class="text_ad_0">身份证号：</span>
+				</td>
+				<td>
+					<input id="idCard" type="text" name="idCard" class="input_0" value="" />
+					<span class="validation_span"></span>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" >
+					<span class="text_ad_0">职位：</span>
+				</td>
+				<td>
+					<input id="department" type="text" name="department" class="input_0" value="" />
+					<span class="validation_span"></span>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" >
+					<span class="text_ad_0">邮箱：</span>
+				</td>
+				<td>
+					<input id="email" type="text" name="email" class="input_0" />
+					<span class="validation_span"></span>
+				</td>
+			</tr>
+			<tr>
+				<td align="right" >
+					<span class="text_ad_0">地址：</span>
+				</td>
+				<td>
+					<input id="address" type="text" name="address" class="input_0" />
+					<span class="validation_span"></span>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="left" >
+					<div style="margin-top:10px;margin-bottom:20px;margin-left:120px;">
+						<input type="submit" class="layui-btn" lay-submit="" lay-filter="add" id="saveBtu" name="saveBtu" value="保存" style="" />
+						<input type="button" class="layui-btn" lay-submit="" lay-filter="add" id="backBtu" name="backBtu" value="返回" style="margin-left:20px;" />
+					</div>
+				</td>
+			</tr>
+		</table>
+	</form>
+		</div>
+	</div>
+</div>
+</body>
+</html>

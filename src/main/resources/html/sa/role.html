@@ -1,0 +1,593 @@
+<!DOCTYPE html >
+<html xmlns:th="http://www.thymeleaf.org" xmlns:tiles="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>角色管理</title>
+<link type="text/css" rel="stylesheet" th:href="@{/css/page.css}"/>
+<script type="text/javascript" th:src="@{/js/jquery/jquery-3.3.1.js}"></script>
+<!-- mmGrid -->
+<link rel="stylesheet" type="text/css" th:href="@{/plug/mmGrid/mmGrid.css}"/>
+<script type="text/javascript"  th:src="@{/plug/mmGrid/mmGrid.js}" ></script>
+<!-- mmGrid page -->
+<link rel="stylesheet" type="text/css" th:href="@{/plug/mmGrid/mmPaginator.css}"/>
+<script type="text/javascript" th:src="@{/plug/mmGrid/mmPaginator.js}" ></script>
+<!-- zTree -->
+<link rel="stylesheet" type="text/css" th:href="@{/plug/zTree/css/zTreeStyle/zTreeStyle.css}"/>
+<script type="text/javascript" th:src="@{/plug/zTree/js/jquery.ztree.core.js}" ></script>
+<script type="text/javascript" th:src="@{/plug/zTree/js/jquery.ztree.excheck.js}" ></script>
+<script type="text/javascript" th:src="@{/plug/zTree/js/jquery.ztree.exedit.js}" ></script>
+<!-- layer -->
+<link type="text/css" rel="stylesheet" th:href="@{/plug/layui/css/layui.css}"  media="all"/>
+<script type="text/javascript" th:src="@{/plug/layui/layui.js}"  charset="utf-8"></script>
+
+<link type="text/css" rel="stylesheet" th:href="@{/js/layer/skin/layer.css}"/>
+<script type="text/javascript" th:src="@{/js/layer/layer.js}" ></script>
+
+<style type="text/css">
+.mmGrid,.mmPaginator{
+    
+}
+
+.png_table{margin-bottom:8px;}
+
+.button_a{cursor:pointer;border:1px solid #AAAAAA;padding:3px 12px 3px 12px;text-decoration:none;
+	-moz-border-radius: 10px;      /* Gecko browsers */
+    -webkit-border-radius: 10px;   /* Webkit browsers */
+    border-radius:10px;            /* W3C syntax */
+    margin-right:10px;
+    text-decoration:none;
+}
+.button_a:HOVER{background-color:#EEEEEE;}
+.button_a img{height:16px;vertical-align:-2px;border:0px;}
+.button_a span{line-height:30px;font-size:14px;color:#111111;font-family::Microsoft YaHei;}
+
+.tree_table{border:1px solid #666666;width:100%;}
+.tree_table .left_tree{border-right:1px solid #666666;width:180px;}
+
+.tab_span{font-size:13px;color:#111111;font-family::Microsoft YaHei;padding:7px 15px;border:1px solid #666666;margin-left:50px;cursor:pointer;border-bottom:none;}
+.tab_span_checked{background-color:#009688; color:#fff}
+
+.right_div{margin:7px 20px 10px 20px;border:1px solid #666666;z-index:100;}
+
+#role_div{display:none;}
+
+#have_role_div_span{font-size:14px;font-weight:bold;padding:5px;margin-top:10px;}
+.have_role_table{background-color:#666666;margin-top:5px;font-size:13px;}
+.have_role_table td{background-color:#FFFFFF;height:20px;}
+
+button.btu{padding:0px 12px;line-height:25px;margin-right:10px;cursor:pointer;}
+
+.alertBox_text span{font-weight:normal;letter-spacing:0;}
+.text_red{color:red;}
+
+</style>
+
+<script type="text/javascript">
+
+var roleNodeChecked = null; //角色数选择的节点
+var departmentList; //= ${departmentList}; //部门
+var roleList = null; //角色
+var roleObj = {}; //角色
+
+$(function(){
+	
+	//弹出框扩展
+	layer.config({
+	    extend: 'extend/layer.ext.js'
+	}); 
+	
+	//获得所有角色
+	getAllRole();
+	
+	//获取所有权限页面
+	getAllPage();
+	
+	//tab的动作
+	$(".tab_span").click(function(){
+		if($(this).hasClass("tab_span_checked")){
+			//alert("self checked");
+		}else{
+			//去除颜色
+			$(".tab_span").removeClass("tab_span_checked");
+			//加上颜色
+			$(this).addClass("tab_span_checked");
+			
+			if($(this).attr("role") == "role"){
+				$("#user_div").hide();
+				$("#role_div").show();
+			}else{
+				$("#role_div").hide();
+				$("#user_div").show();	
+				if(null != roleNodeChecked){					
+					roleUserTable(roleNodeChecked.roleId);
+				}else{
+					layer.alert("<div class='alertBox_text'>请先选择一个角色！</div>", {icon: 0});
+				}
+			}
+		}
+	});
+	
+	//
+	$("#table_div").width($("#user_div").width());
+});
+
+function getAllRole(){
+	//获得所有角色
+	$.ajax({
+		type:"POST",
+		async:true,  //默认true,异步
+		url:"/admin/getAllRole",
+		success:function(data){
+			//所有角色
+			roleList = data;
+			
+			$.each(roleList, function(index, val){
+				roleObj[val.roleId+''] = val.name;
+			});
+			
+			var setting = {
+					view: {
+						selectedMulti: false
+					},
+					callback: {
+						beforeClick: function(treeId, treeNode, clickFlag){
+							if(!treeNode.roleId){
+								return false;
+							}
+						},
+						onClick: function(e, treeId, treeNode, clickFlag){
+							
+							roleNodeChecked = treeNode;
+							//把右边的选中,根据用户id获取角色下的所有页面
+							$.ajax({
+								type:"POST",
+								async:false,  //默认true,异步
+								data:"roleId="+roleNodeChecked.roleId,
+								url:"/admin/getPageByRole",
+								success:function(data){
+									var treeObj = $.fn.zTree.getZTreeObj("treePage");
+									
+									//取消勾选
+									$.each(treeObj.getCheckedNodes(true), function(index, val){
+										treeObj.checkNode(val, false, true);
+									});
+									
+									var haveData = [];
+									$.each(data, function(index, val){
+										if(val.parentId){
+											//alert(JSON.stringify(treeObj.getNodeByTId(val.id+"")));
+											haveData.push(treeObj.getNodeByParam("pageId", val.pageId, null));	
+										}
+									});
+									//alert(JSON.stringify(haveData.length));
+									
+									//给权限表格加上数据
+									//$("#have_role_div_span").text(roleNodeChecked.name+"拥有的权限：");
+
+									for (var i=0; i < haveData.length; i++) {
+										if(haveData[i]!=null)
+										if(haveData[i].levelType == 1){
+											treeObj.checkNode(haveData[i], true, true);
+										}
+									}
+								}
+							});
+							
+							//角色成员
+							if(null != roleNodeChecked){					
+								roleUserTable(roleNodeChecked.roleId);
+							}else{
+								layer.alert("<div class='alertBox_text'>请先选择一个角色！</div>", {icon: 0});
+							}
+						}
+					}
+			};
+			var zNodes =[{name:"角色列表", open:true, children:null}];
+			zNodes[0].children = data;
+			$.fn.zTree.init($("#treeDemo"), setting, zNodes);
+			
+	    }
+	});
+}
+
+function getAllPage(){
+	//获取所有权限页面
+	$.ajax({
+		type:"POST",
+		async:true,  //默认true,异步
+		url:"/admin/getAllPage",
+		success:function(data){			
+			var setting = {
+					data: {
+						key: {
+							url: "xUrl"
+						},
+						simpleData: {
+							enable: true,
+			                idKey: "pageId",//节点id名
+			                pIdKey: "parentId"//父节点id名
+						}
+					},
+					check: {
+						enable: true
+					},
+					callback: {
+						beforeClick: function(treeId, treeNode, clickFlag){
+							return false;
+						}
+					}
+			};
+			$.fn.zTree.init($("#treePage"), setting, data);
+			//模拟点击事件
+			if($("#treeDemo_2_a").html()==null){
+				layer.alert("<div class='alertBox_text'>请先选择一个角色！</div>", {icon: 0});
+			}
+			$("#treeDemo_2_span").click();
+			$("#treeDemo_2_a").click();
+	    }
+	});
+}
+
+//增加权限
+function addRow(oldId, oldName, updateUrl){
+	//$("#BlackBox_backVal").val("");
+	//oldId, oldName, updateUrl 有值，说明是修改
+	//去除验证格式
+	$("#role_add_div").find("input").val("");
+   	$("#role_add_div").find("div").last().hide();
+   	$("#role_add_div").find("span").removeClass("text_red");
+   	
+   	var indexTitle = "增加角色";
+   	if(updateUrl){
+   		indexTitle = "修改角色";
+   		$("#role_add_div").find("input").val(oldName);
+   	}
+	
+	layer.open({
+	    type: 1,
+		title: indexTitle,
+	    area: ['30%', '50%'], //宽高
+	    content: $("#role_add_div"),
+	    btn: ['保存','关闭'], //按钮
+	    yes: function(index, layero){
+	    	
+	    	var newRoleNameCheckFlag = true;
+	    	
+	    	var newRoleName = $.trim($("#role_add_div").find("input").val());
+	    	
+	    	if(newRoleName == ""){
+	    		$("#role_add_div").find("div").last().text("角色不可为空").show();
+				newRoleNameCheckFlag = false;
+	    	}
+	    	
+	        //验证名称是否重复
+	    	for(var i=0; i<roleList.length; i++){
+    			if(newRoleName == roleList[i].name){
+    				$("#role_add_div").find("div").last().text("此角色已经存在").show();
+    				newRoleNameCheckFlag = false;
+    				break;
+    			}
+    		}
+    		
+	        //长度最多10个字符
+    		if(newRoleName.length > 10){
+    			$("#role_add_div").find("span").addClass("text_red");
+    			return false;
+    		}else{
+    			$("#role_add_div").find("span").removeClass("text_red");
+    		}
+	        
+	        if(newRoleNameCheckFlag){
+	        	//验证通过
+	        	$("#role_add_div").find("div").last().hide();
+	        	
+	        	var paramUrl = "/admin/addRole";
+	        	var paramData = "name="+newRoleName;
+	        	if(updateUrl){
+	        		paramUrl = updateUrl;
+	        		paramData = "name="+newRoleName+"&id="+oldId;
+	        	}
+	        	//保存
+	        	$.ajax({
+	        		type:"POST",
+	        		async:true,  //默认true,异步
+	        		url: paramUrl,
+	        		data: paramData,
+	        		success:function(){
+	        			//获得所有角色
+	        			getAllRole();
+	        			
+	        			layer.close(index);
+	        	    }
+	        	});
+	        }
+	    }
+	});
+}
+
+//删除权限
+function deleteRow(){
+	
+	if(roleNodeChecked){
+		if(roleNodeChecked.roleId == 1 ||
+				roleNodeChecked.roleId == 2||
+				roleNodeChecked.roleId == 3){
+			layer.msg('系统权限无法删除！'); 
+		}else{			
+		layer.confirm('确认删除吗？', {icon: 3, title:'提示'}, function(index){
+	    	$.ajax({
+	    		type:"POST",
+	    		async:true,  //默认true,异步
+	    		url:"/admin/delRole",
+	    		data:"id="+roleNodeChecked.roleId,
+	    		success:function(data){
+	    			
+	    			if(data == "SUCCESS"){
+	    				
+	    				layer.alert('删除成功！', {icon: 1}, function(indexOk){
+	    					getAllRole();
+	    					layer.close(indexOk);
+	       				});
+	    				
+	    			}else{
+	    				layer.alert('删除失败！', {icon: 0});
+	    			}
+	    	    }
+	    	});
+		});
+		}
+		
+	}else{
+		layer.alert("<div class='alertBox_text'>请先选择一个角色！</div>", {icon: 0});
+	}
+	
+}
+
+//修改权限
+function editRow(){
+	if(roleNodeChecked){
+		if(roleNodeChecked.roleId == 1 ||
+				roleNodeChecked.roleId == 2||
+				roleNodeChecked.roleId == 3){
+			layer.msg('系统权限无法修改！'); 
+		}else{				
+			addRow(roleNodeChecked.roleId, roleNodeChecked.name, "/admin/updateRole");
+		}
+	}else{
+		layer.alert("<div class='alertBox_text'>请先选择一个角色！</div>", {icon: 0});
+	}
+}
+
+//保存角色的权限页面
+function saveRolePage(){
+	if(roleNodeChecked){
+		layer.confirm('确认保存吗？', {icon: 3, title:'保存角色页面'}, function(index){
+			var layerSaving = layer.msg('保存中...', {icon: 16, time: 0, shade: [0.3, '#000']});
+			
+			var treeObj = $.fn.zTree.getZTreeObj("treePage");
+			
+			//增加现在选择的节点
+			var param = [];
+			
+			param.push({"name":"roleId", "value":roleNodeChecked.roleId});
+			
+			$.each(treeObj.getCheckedNodes(true), function(index, val){
+				param.push({"name":"pageIds", "value":val.pageId});
+			});
+			//alert(JSON.stringify(param));
+			$.ajax({
+				type:"POST",
+				async:true,  //默认true,异步
+				url:"/admin/addPageRoleByRoleId",
+				data:param,
+				success:function(data){
+					layer.close(layerSaving);
+					if(data == "SUCCESS"){
+	    				layer.alert('保存成功！', {icon: 1});
+	    			}else{
+	    				layer.alert('保存失败！', {icon: 0});
+	    			}
+			    }
+			});
+			
+		});
+		
+	}else{
+		layer.alert("请先选择一个角色，并勾选这个角色可以拥有的权限！", {icon: 0});
+	}
+}
+
+//角色成员
+function roleUserTable(roleId){
+	
+	if(null == roleId){
+		layer.alert("请先选择一个角色！", {icon: 0});
+	}
+	if($('#exampleTableRole').html() != ""){
+		console.log(roleId);
+		//表格已经存在
+		var param = new Object();
+		param.roleId = roleId;
+		param.page = 1;
+		//alert(JSON.stringify(param));
+		$('#exampleTableRole').mmGrid().load(param);
+	}else{
+		//表格
+		$('#exampleTableRole').mmGrid({
+	    	root:'rows',
+			url:"/admin/getAllUserByRoleId",
+			params:function(){
+				var rid = roleNodeChecked.roleId;
+				return {"roleId":rid};
+			},
+	    	width: 'auto',
+	    	height: 'auto',
+	        fullWidthRows: true, //表格第一次加载数据时列伸展，自动充满表格
+    		showBackboard: true,
+	        nowrap: true,
+	        indexCol: true,  //索引列
+	        cols: [{title: 'ID', name: 'id', width:60, hidden:true},
+				   {title: '姓名', name: 'name', width:80},
+				   {title: '联系电话', name: 'phone', width:100},
+				   {title: '邮箱', name: 'email', width:100},
+				   {title: '身份证', name: 'idCard', width:100},
+				   {title: '类型', name: 'role', width:40, renderer:function(val, item, rowIndex){
+					   if(val == 1){
+						   return "<span style='color:red'>超级管理员</span>";
+					   }else if(val == 2){
+						   return "<span style='color:green'>企业用户</span>";
+					   }else if(val == 3){
+						   return "<span style='color:blue'>超级用户</span>";
+					   }
+				   }},
+				   {title: '操作', name: 'id', width:60, renderer:function(val, item, rowIndex){
+					   // alert(JSON.stringify(roleList));
+					   return "<a href='javascript:;' onclick='removeRole("+"\""+val+"\""+", "+rowIndex+")' style='color:red;' title='删除角色用户'>删除</a>";
+				   }}
+	           ],
+	        plugins : [
+	        	$('#paginator11-1').mmPaginator({
+	        		totalCountName: 'total',   //对应MMGridPageVoBean total
+	        		page: 1,                   //初始页
+	        		pageParamName: 'page',     //当前页数
+	        		limitParamName: 'limit', //每页数量
+	        		limitList: [10, 20, 40, 50]
+	        	})
+	        ]
+	    });	
+		$("th.mmg1f390-col0 span.mmg-title").html("序号");
+	}
+}
+
+//选择用户
+function alertWinUser(){
+	
+	if(roleNodeChecked == null){
+		//未选择角色
+		layer.alert("请先选择一个角色！", {icon: 0});
+	}else{
+		
+		layer.open({
+		    type: 2,
+		    title: '选择用户',
+		    area: ['70%', '90%'],
+		    content: '/admin/selectUserRole' //iframe的url
+		});
+	}
+}
+
+//保存完用户的角色
+function afterSaveUserRole(){
+	//关闭弹出框
+	layer.closeAll();
+	//刷新表格
+	roleUserTable(roleNodeChecked.roleId);
+}
+
+//删除用户的角色
+function removeRole(id, rowIndex){
+	
+	layer.confirm('确认删除吗？', {icon: 3, title:'提示'}, function(index){
+    	
+		var layerSaving = layer.msg('保存中...', {icon: 16, time: 0, shade: [0.3, '#000']});
+		
+		$('#exampleTableRole').mmGrid().removeRow(rowIndex);
+		
+		$.ajax({
+			type:"POST",
+			async:true,  //默认true,异步
+			url:"/admin/delUserRoleByUserIdAndRoleId",
+			data:"userId="+id+"&roleId="+roleNodeChecked.roleId,
+			success:function(data){
+				layer.close(layerSaving);
+				if(data.result == "success"){
+    				layer.alert('保存成功！', {icon: 1}, function(indexOk){
+    					layer.close(indexOk);
+    				});
+    			}else if(data.message == "DontOP"){
+    				layer.alert('删除失败！自己不能删除自己！', {icon: 2}, function(indexOk){
+    					layer.close(indexOk);
+    				});
+    			}else{
+    				layer.alert('保存失败！', {icon: 2}, function(indexOk){
+    					layer.close(indexOk);
+    				});
+    			}
+				//刷新表格
+				var param = new Object();
+				param.roleId = roleNodeChecked.roleId;
+				//alert(JSON.stringify(param));
+				$('#exampleTableRole').mmGrid().load(param);
+		    }
+		});	
+		
+	});
+}
+</script>
+</head>
+<body>
+<div style="width: 99%">
+  <div class="layui-tab-content" style="height: 500px;">
+    <div class="layui-tab-item layui-show" >
+	<div class="first_div" style="border:none;">
+		<table class="tree_table" cellpadding="0" cellspacing="0" >
+			<tr>
+				<td class="left_tree" valign="top">
+					
+					<!-- 按钮 -->
+					<table class="png_table" cellpadding="0" cellspacing="0" style="margin-top: 5px;">
+						<tr>
+							<td>
+								<button class="layui-btn" style="margin:0px 10px 0px 10px;" title="角色列表">角色列表</button>
+							</td>
+						</tr>
+					</table>
+				
+					<ul id="treeDemo" class="ztree"></ul>
+				</td>
+				<td>
+					<div style="margin-top:20px;">
+						<span class="tab_span  tab_span_checked"  role="user" title="角色成员分配">角色成员</span>
+						<span class="tab_span" role="role" style="margin-left:10px;" title="角色页面分配">角色页面</span>
+						
+						<div class="right_div" id="user_div">
+							<!-- 角色成员 -->
+							<div style="margin:10px;" id="table_div" >
+								<button class="layui-btn layui-btn-radius" onclick="alertWinUser()" style="margin-bottom:5px;">增加用户</button>
+								<table id="exampleTableRole"></table>
+								<div style="text-align:right;">
+							    	<div id="paginator11-1"></div>
+							    </div>
+							</div>
+						</div>
+						
+						<div class="right_div" id="role_div" align="right" >
+							<table style="width:100%;height:100%;" cellpadding="0" cellspacing="0" >
+								<tr align="left" valign="top">
+									<td style="width:300px;">
+										<ul id="treePage" class="ztree" style=""></ul>
+									</td>
+								</tr>
+							</table>
+							<button class="layui-btn layui-btn-radius" style="margin-bottom:10px;margin-right:50px;" onclick="saveRolePage()" title="保存角色-页面设置">保存</button>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+	<input type="hidden" id="BlackBox_backVal" />
+	
+	<div id="role_add_div" style="padding:10px;padding-left:20px;display:none;" >
+		<div style="font-size:14px;line-height:40px;">请输入新角色的名称(<span>名称最多10个字符</span>)</div>
+		<input type="text" id="role_name" name="role_name" class="input_0" style="width:240px;" />
+		<div style="font-size:14px;line-height:40px;color:red;display:none;">此角色已经存在</div>
+	</div>
+	
+	</div>
+	</div>
+	</div>
+</body>
+</html>
